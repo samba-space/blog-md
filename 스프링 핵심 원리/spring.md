@@ -26,7 +26,7 @@
 ## 역할과 구현을 분리 
 - 역할과 구현으로 구분하면 세상이 단순해지고, 유연해지며 변경도 편리해진다. 
 - 장점
-클라이언트는 대상의 역할(인터페이스)만 알면 된다. 클라이언트는 구현 대상의 내부 구조를 몰라도 된다. 클라이언트는 구현 대상의 내부 구조가 변경되어도 영향을 받지 않는다. 
+클라이언트는 대상의 역할(인터페이스)만 알면 된다.클라이언트는 구현 대상의 내부 구조를 몰라도 된다.클라이언트는 구현 대상의 내부 구조가 변경되어도 영향을 받지 않는다. 
 클라이언트는 구현 대상 자체를 변경해도 영향을 받지 않는다. 
 
 ## 자바 언어 역할과 구현의 분리
@@ -58,7 +58,7 @@
 
 # 좋은 객체 지향 설계의 5가지 원칙(SOLID)
 ##SOLID : 좋은 객체 지향 설계의 5가지 원칙을 정리 
-SRP: 단일 책임 원칙(single responsibility principle) OCP: 개방-폐쇄 원칙 (Open/closed principle) —> 가장 중요  LSP: 리스코프 치환 원칙 (Liskov substitution principle) 
+SRP: 단일 책임 원칙(single responsibility principle)OCP: 개방-폐쇄 원칙 (Open/closed principle) —> 가장 중요 LSP: 리스코프 치환 원칙 (Liskov substitution principle) 
 ISP: 인터페이스 분리 원칙 (Interface segregation principle) 
 DIP: 의존관계 역전 원칙 (Dependency inversion principle) —> 가장 중요
 
@@ -73,7 +73,7 @@ public class MemberService {
 ```
 - 구현 객체를 변경하려면 클라이언트 코드를 변경해야 한다.
 - 분명 다형성을 사용했지만 OCP 원칙을 지킬 수 없다.
-- Client가 바뀌어야함 OCP가 깨짐 (Spring ioc, di가 필요함) 
+- Client가 바뀌어야함 OCP가 깨짐 (Spring ioc, di가 필요함)
 ### LSP: 리스코프 치환 원칙 (Liskov substitution principle)
 - 단순히 컴파일에 성공하는 것을 넘어서는 이야기 
 예) 자동차 인터페이스의 엑셀은 앞으로 가라는 기능, 뒤로 가게 구현하면 LSP 위반, 느리 더라도 앞으로 가야함 
@@ -85,7 +85,7 @@ public class MemberService {
 - 분리하면 정비 인터페이스 자체가 변해도 운전자 클라이언트에 영향을 주지 않음 
 - 인터페이스가 명확해지고, 대체 가능성이 높아진다. 
 
- ### DIP: 의존관계 역전 원칙 (Dependency inversion principle) —> 가장 중요
+### DIP: 의존관계 역전 원칙 (Dependency inversion principle) —> 가장 중요
 - 의존성 주입도 이원칙을 따르는 방법 중 하나.
 - 쉽게 클라이언트가 인터페이스에 의존하라는 뜻(구현 클래스에 의존하지 말고)
 - 역할에 의존하게 해야 한다는것과 같다. -> 유연하게 구현체를 변경할 수 있다.
@@ -111,7 +111,7 @@ public class MemberService {
 
 ## 정리
 - 모든 설계에 역할과 구현을 분리하자. 
-- 애플리케이션 설계도 공연을 설계 하듯이 배역만 만들어두고,  배우는 언제든지 유연하게 변경할 수 있도록 만드는 것이 좋은 객체 지향 설계다. 
+- 애플리케이션 설계도 공연을 설계 하듯이 배역만 만들어두고, 배우는 언제든지 유연하게 변경할 수 있도록 만드는 것이 좋은 객체 지향 설계다. 
 - 이상적으로는 모든 설계에 인터페이스를 부여하자
     - 문제
         - 인터페이스 도입은 추상화라는 비용이 발생(개발자가 구현체로 한번더 들어가는거 등)
