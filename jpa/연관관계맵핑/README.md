@@ -70,9 +70,9 @@ Team findTeam = findMember.getTeam();
 이전 데이터 중심의 모델링과 다르게 객체지향적으로 연관관계를 조회하는 것을 볼 수 있다.  
 
 ## 양방향 연관관계
+Member에서 Team으로 접근 뿐만 아니라, Team에서도 Member를 접근하려면 양방향 연관관계를 추가해야 한다.  
 양방향 연관관계에서 객체와 테이블의 연관관계를 맺는 차이로 인해 **양방향 매핑**이 필요하다.
 
-### 연관관계의 주인과 mappedBy
 ### 객체와 테이블이 관계를 맺는 차이
 #### 객체
 
@@ -120,7 +120,7 @@ ON T.TEAM_ID = M.TEAM_ID
 위에서 객체와 테이블의 연관관계를 맺는 차이를 확인 할 수 있었다.  
 이러한 차이에서 양방향 매핑을 하기위해 **연관관계의 주인**이 필요하다.(연관관계의 주인은 비지니스적으로 중요하다는 뜻이 아니다.)  
 **연관관계의 주인은 table에서 외래키가 있는 곳으로 정하자.**(1:M에서 M인곳)  
-연관관계 주인이 외래 키를 관리한다. 주인이 아닌쪽은 읽기만 가능
+또, 데이터의 등록, 수정은 **연관관계의 주인 쪽**에서 가능하고, 조회는 **주인이 아닌 쪽**에서 가능하다.
 
 아래 클래스 다이어그램과 ERD를 통해 누구를 **연관관계의 주인**으로 정하는지 알아보자.
 
@@ -135,4 +135,66 @@ Member.team 또는 Team.members 중 연관관계의 주인을 정해야한다.
 Team.members를 연관관계의 주인으로 정할수 있으나,  
 성능이슈도 있을 수 있고, team의 값을 바꿧는데 member에 update되어 비지니스적으로 명확하지 않다.
 
-3. 주인이 아닌쪽에 mappedBy을 사용하여, 속성으로 주인을 지정(해석하면 저거에 의해서 mapping 되었다)
+### mappedBy를 통한 양방향 매핑
+연관관계의 주인은 변한게 없으며, **주인이 아닌 쪽에 mappedBy 속성으로 주인을 지정(필드명)**하여, 양방향 매핑을 한다.
+
+``` java
+@Entity
+public class Member{
+    ...
+    @ManyToOne
+    @JoinColumn(name = "TEAM_ID")
+    private Team team;
+}
+
+@Entity
+public class Team{
+    ...
+    @OneToMany(mappedBy = "team")
+    private List<Member> members = new ArrayList<Member>();
+}
+```
+
+### 양방향 연관관계 사용 시 주의점
+- 연관관계의 주인에 값을 세팅하자.(주인이 아닌 곳은 읽기 전용)
+
+- 순수 객체 상태를 고려해서 항상 양쪽에 값을 설정하자.  
+
+``` java
+Team team = new Team();
+team.setName("TeamA");
+em.persist(team);
+
+Member member = new Member();
+member.setName("member1");
+
+team.getMembers().add(member);
+member.setTeam(team);
+
+em.persist(member);
+```
+
+- 연관관계 편의 메소드를 생성하자.  
+하나만 호출해도 양쪽 값이 바뀌어 원자적으로 사용 할 수 있다.  
+메소드명은 로직이 들어갔다는 것을 알 수 있게 setter를 쓰지 않는다.  
+또, Team 쪽에 연관관계 메소드(team.addMember(...))를 생성해도 된다. 주의할 점은 둘 중 하나만 생성해야 한다.
+``` java
+@Entity
+public class Member{
+    ...
+    public void changeTeam(Team team){
+        this.team = team;
+        team.getMembers().add(this);
+    }
+}
+```
+
+- 양방향 매핑 시에 무한 루프를 조심하자.
+    - lombok의 toString 사용하면, member, team 무한루프에 빠지게 된다. 재정의해서 사용하자.
+    - JSON 생성 라이브러리를 통해 양방향이 걸려있는 Entity를 JSON으로 변환 시, 무한루프에 빠지게 된다.  
+    그러므로 controller에서 Entity를 직접 반환하지 말고, DTO를 사용하자. (뿐만 아니라 Entity 변경 시, API spec이 변경되는 문제도 있다.)
+
+### 양방향 매핑 정리
+- 설계 단계에서는 단방향 매핑만으로 객체와 table 매핑을 완료하자.  
+실제 개발을 진행하며, 필요 시(JPQL 사용) 넣어주는 것이 좋다.(양방향 매핑 반대 방향 조회 기능이 추가된 것 뿐이다.)  
+객체 입장에서도 양방향은 신경쓸 부분이 많아 이득이 크게 없다.
