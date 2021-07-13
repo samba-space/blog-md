@@ -181,7 +181,7 @@ static public <T> List<T> filter(List<T> list, Predicate<T> p){
 ```
 
 사과 뿐 아니라 다양한 물체의 리스트에 필터 메서드를 사용할 수 있다.  
-실제 
+아래는 호출 시 소스코드이며, 유연성과 간결함을 확인할 수 있다.
 
 ``` java 
 List<Apple> redApples = filter(inventory, (Apple apple) -> Color.RED.equals(apple.getColor()));
