@@ -1,6 +1,7 @@
 package com.example;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -48,15 +49,16 @@ public class Main {
 	// write your code here
         System.out.println("Main.main");
         List<Apple> inventory = new ArrayList<>();
-        List<Apple> greenApples = filterApples(inventory, Color.GREEN, 0, true);
-        List<Apple> heavyApples = filterApples(inventory, Color.RED, 150, false);
+        inventory.add(new Apple(Color.RED, 1));
+        inventory.add(new Apple(Color.GREEN, 2));
+        inventory.add(new Apple(Color.RED, 3));
+        inventory.add(new Apple(Color.RED, 4));
 
-        filterApples(inventory, apple -> Color.GREEN.equals(apple.getColor()));
-        inventory.sort(Comparator.comparing(Apple::getWeight));
-        ToIntBiFunction<String, String> compareToIgnoreCase = String::compareToIgnoreCase;
+        List<Apple> greenApples = filterApples(inventory, apple -> Color.GREEN.equals(apple.getColor()));
+        Predicate<Apple> keyEventDispatcher = apple -> Color.GREEN.equals(apple.getColor());
+        List<Apple> redApples = filterApples(inventory, keyEventDispatcher.negate());
 
-        Function<Integer, Apple> colorIntegerAppleBiFunction = Apple::new;
-        BiFunction<Color, Integer, Apple> colorIntegerAppleBiFunction1 = Apple::new;
+
     }
 
     public static List<Apple> filterGreenApples(List<Apple> inventory){

@@ -17,25 +17,31 @@ public class Main3 {
         String process(BufferedReader b) throws IOException;
     }
     public static void main(String[] args) throws IOException {
-        String oneLine = processFile((BufferedReader br) -> br.readLine());
-        String twoLines = processFile((BufferedReader br) -> br.readLine() + br.readLine());
+//        String oneLine = processFile((BufferedReader br) -> br.readLine());
+//        String twoLines = processFile((BufferedReader br) -> br.readLine() + br.readLine());
+//
+//        IntPredicate evenNumbers = (int i) -> i % 2 == 0;
+//
+//        List<String> list = new ArrayList<>();
+//        Predicate<String> p = s -> list.add(s);
+//        Consumer<String> c = s -> list.add(s);
+//        Function<String, Boolean> filter = (String s) -> s.isEmpty();
+//        Consumer<String> cs = (String s) -> s.isEmpty();
+//
+//        int portNumber = 1;
+//        Runnable runnable = () -> System.out.println("portNumber = " + portNumber);
+//
+//        ToIntFunction<String> function = Integer::parseInt;
+//        BiPredicate<List, Object> contains = List::contains;
+//
+//        list.sort((o1, o2) -> 0);
 
-        IntPredicate evenNumbers = (int i) -> i % 2 == 0;
 
-        List<String> list = new ArrayList<>();
-        Predicate<String> p = s -> list.add(s);
-        Consumer<String> c = s -> list.add(s);
-        Function<String, Boolean> filter = (String s) -> s.isEmpty();
-        Consumer<String> cs = (String s) -> s.isEmpty();
+        Function<String, String> addHeader = Letter::addHeader;
 
-        int portNumber = 1;
-        Runnable runnable = () -> System.out.println("portNumber = " + portNumber);
-        portNumber = 2;
 
-        ToIntFunction<String> function = Integer::parseInt;
-        BiPredicate<List, Object> contains = List::contains;
-
-        list.sort((o1, o2) -> 0);
+        System.out.println(addHeader.andThen(Letter::checkSpelling)
+                .andThen(Letter::addFooter).apply("labda"));
 
 
     }
