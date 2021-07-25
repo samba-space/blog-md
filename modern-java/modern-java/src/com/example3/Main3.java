@@ -1,5 +1,6 @@
 package com.example3;
 
+import com.example.Main;
 import com.sun.corba.se.impl.orbutil.ObjectUtility;
 
 import java.io.BufferedReader;
@@ -12,6 +13,38 @@ import java.util.List;
 import java.util.function.*;
 
 public class Main3 {
+    private static class Apple{
+        private Color color;
+        private int weight;
+
+        public Apple(int weight) {
+            this.weight = weight;
+        }
+
+        public Apple(Color color, int weight) {
+            this.color = color;
+            this.weight = weight;
+        }
+
+        public Integer getWeight() {
+            return weight;
+        }
+
+        public void setWeight(int weight) {
+            this.weight = weight;
+        }
+
+        public Color getColor() {
+            return color;
+        }
+
+        public void setColor(Color color) {
+            this.color = color;
+        }
+    }
+    private enum Color{
+        RED, GREEN
+    }
     @FunctionalInterface
     public interface BufferedReaderProcessor{
         String process(BufferedReader b) throws IOException;
@@ -44,6 +77,14 @@ public class Main3 {
                 .andThen(Letter::addFooter).apply("labda"));
 
 
+        ToIntBiFunction<Apple, Apple> appleComparator =
+
+
+
+
+                (Apple a1, Apple a2)  ->  a1.getWeight().compareTo(a2.getWeight());
+
+
     }
     public static String processFile(BufferedReaderProcessor p) throws IOException{
         try(BufferedReader br = new BufferedReader(new FileReader("data.txt"))){
@@ -51,4 +92,10 @@ public class Main3 {
         }
     }
 
+
+    public static String processFile() throws IOException{
+        try(BufferedReader br = new BufferedReader(new FileReader("data.txt"))){
+            return br.readLine();
+        }
+    }
 }
