@@ -79,3 +79,10 @@ List<Dish> dishes = menu.stream()
                          .skip(2)
                          .collect(toList());
 ```
+
+## 맵핑
+특정 객체에서 특정 데이터를 선택하는 작업은 자주 수행되는 연산이다.  
+**map**, **flatMap** 메서드는 특정 데이터를 선택하는 기능을 제공한다.
+
+### 스트림의 각 element에 함수 적용
+**map** 메서드는 전달받은 함수를 각 element에 적용하며 함수를 적용한 결과가 새로운 element로 매핑된다.(mapping은 modify보단 transforming에 가깝다)
