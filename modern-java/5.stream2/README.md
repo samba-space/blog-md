@@ -233,6 +233,147 @@ System.out.println("num2 = " + num2);
 
 > 쇼트서킷
 
+### reduce
+**reduce** 메서드는 결과가 나올 때까지 스트림의 모든 element를 반복적으로 처리한다.
+
+#### 장점, 병렬화
+reduce를 이용하면 내부 반복이 추상화되면서 내부 구현에서 병렬로 reduce를 실행할 수 있게 된다.  
+기존의 반복적으로 합계를 구하는 방법(mutable accumulator pattern)은 변수(sum)를 공유해야 하므로 병렬화하기 쉽지 않다.(병렬화와 거리가 먼 기법)
+
+합계를 구하는 코드를 병렬화하면 아래와 같다.
+
+``` java
+int sum = numbers.parallelStream().reduce(0, Integer::sum);
+```
+
+위의 코드를 병렬로 실행하려면 reduce에 넘겨준 람다의 상태가 바뀌지 말아야 하며, 연산 순서와 관계 없이 결과가 바뀌지 않는 구조여야 한다.
+
+#### 1. sum
+숫자 리스트의 합계를 구할 때, reduce를 살펴보자.  
+
+``` java
+int sum1 = numbers.stream()
+                 .reduce(0, (a, b) -> a + b);
+
+//메서드 참조를 이용 (두 숫자를 더하는 정적 메서드 sum)
+int sum2 = numbers.stream()
+                 .reduce(0, Integer::sum);
+```
+
+스트림이 하나의 값으로 줄어들 때까지 람다는 각 element를 반복해서 조합한다.
+
+```java 
+T reduce(T identity, BinaryOperator<T> accumulator); 
+```
+
+reduce의 각 파라미터는 다음과 같다.
+- T : 초기 값  
+- BinaryOperator\<T\> : 2개의 element의 조합해서 새로운 값을 만든다.
+
+초기 값 파라미터가 없는 reduce 메서드는 아래와 같다.
+
+``` java
+Optional<T> reduce(BinaryOperator<T> accumulator);
+```
+
+이 경우 Optional을 반환하는 이유는 스트림에 element가 없을 경우, 초기 값이 없어  
+합계를 반환할 수 없기 때문이다.
+
+#### max, min
+``` java
+Optional<Integer> max = numbers.stream().reduce(Integer::max);
+Optional<Integer> min = numbers.stream().reduce(Integer::min);
+```
+
+max의 경우 람다 표현식 ```(x, y) -> x > y ? x : y``` 로 사용할 수 있지만,  
+위와 같이 메서드 참조를 사용하면 가독성이 더 좋다.
+
+#### map-reduce 패턴
+map과 reduce를 연결하는 기법으로 쉽게 병렬화하는 특징이 있다.(구글이 웹검색에 적용하면서 
+유명해졌다.)
+
+다음은 스트림의 요리 개수를 구하는 map-reduce 패턴이다.
+
+``` java
+int count = menu.stream()
+                 .map(d -> 1)
+                 .reduce(0, Integer::sum);
+```
+
+더 쉽게는 stream의 count 메서드를 이용하면 된다.
+
+``` java
+long count = menu.stream().count();
+```
+
+### 스트림 연산 정리
+#### stateless
+map, filter 등은 입력 스트림에서 각 element를 받아 0 또는 결과를 출력 스트림으로 보낸다.  
+이들은 내부 상태를 갖지 않는 stateless operation이다.
+
+#### stateful
+reduce, max 같은 연산은 결과를 누적할 내부 상태가 필요하다. 스트림에서 처리하는 element수와 관계없이  
+내부 상태의 크기는 한정(bounded)되어 있다. 내부 상태를 갖는 stateful operation이라고 한다.
+
+sorted, distinct 연산은 과거의 이력을 알고 있어야 한다. 어떤 element를 출력 스트림에 추가하려면,  
+모든 요소가 버퍼에 추가되어 있어야 한다. 연산을 수행하는 데 필요한 저장소 크기는 정해져있지 않다.
+
+#### 중간 최종 연산 표
+
+## 숫자형 스트림
+### 기본형 특화 스트림
+자바 8에서는 스트림 API 박싱 비용을 피할 수 있도록, 3가지 기본형 특화 스트림(primitive stream specialization)을 제공한다. 각 인터페이스는 sum, max 등 숫자 관련 리듀싱 연산 수행 메서드를 제공한다.
+
+- int : IntStream
+- double : DoubleStream
+- long : LongStream
+
+특화 스트림은 오직 boxing 과정에서 일어나는 효율성과 관련 있으며 스트림에 추가 기능을 제공하지는 않는다.
+
+#### mapToInt, mapToDouble, mapToLong
+스트림을 특화 스트림으로 변환할 때 세가지 메서드를 가장 많이 사용한다.  
+map과 정확히 같은 기능을 수행하지만, ```Stream<T>``` 대신 특화 스트림을 반환한다.
+
+``` java
+int calories = menu.stream()
+                   .mapToInt(Dish::getCalories)
+                   .sum();
+```
+
+위의 예에서 mapToInt는 ```Stream<Integer>```가 아닌 ```IntStream```을 반환한다.  
+또, IntStream이 제공하는 sum메서드를 이용해 합계를 구한다. 스트림이 비어있다면 sum은 0을 반환한다.  
+IntStream은 max, min, average 등의 유틸 메서드도 쩨공한다.
+#### boxed
+boxed 메서드로 특화 스트림에서 스트림으로 복원할 수있다. IntStream은 기본형의 정수값만 만들 수 있다.  
+IntStream의 map 메서드는 IntUnaryOperator(int를 인수로 받아 int를 반환) 람다를 인수로 받는다.  
+만약 int가 아닌 Dish같은 객체값을 반환하고 싶다면 일반 스트림의 map 연산이 필요하다.
+
+boxed 예를 살펴보자.
+
+``` java
+IntStream intStream = menu.stream().mapToInt(Dish::getCalories);
+Stream<Integer> stream = intStream.boxed();
+```
+
+#### OptionalInt
+합계에서는 0이라는 기본 값이 문제가 되지 않지만, IntStream에서 최대값을 찾을 때 0이라는 기본값이 있다면 이때문에 잘못된 결과가 도출될 수 있다. element가 없는 상황인지 실제 최대값이 0인지 구분할 수 없기 때문이다.  
+
+값의 존재 여부를 알 수 있는 Optional이 있다. Optional은 reference type뿐 아니라 기본형 버전도 제공한다.
+**OptionalInt**, **OptionalDouble**, **OptionalLong** 3가지를 제공한다.
+
+아래 코드는 값이 없을 때(menu가 empty), 기본값을 1로 설정했다.
+
+``` java
+OptionalInt maxCalories = menu.stream()
+                              .mapToInt(Dish::getCalories)
+                              .max();
+int max = maxCalories.orElse(1);
+```
+
+### 숫자 범위
+### 숫자 스트림 활용 : 피타고라스 수
+
+## 스트림 만들기
 
 ## Reference
 - Modern Java in Action
