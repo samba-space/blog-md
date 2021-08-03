@@ -355,13 +355,30 @@ IntStream intStream = menu.stream().mapToInt(Dish::getCalories);
 Stream<Integer> stream = intStream.boxed();
 ```
 
+#### mapToObj
+특화 스트림의 요소에 인수로 주어진 함수를 적용한 결과로 구성된 **객체 값 스트림**을 반환한다.  
+특화 스트림의 boxed, map을 mapToObj 하나로 구현할 수 있다. 예를 살펴보자.  
+
+``` java
+Stream<int[]> stream1 = IntStream.rangeClosed(1, 100)
+                                 .filter(num -> num % 2 == 0)//IntStream
+                                 .boxed()//Stream<Integer>
+                                 .map(num -> new int[]{num, num * num});
+
+Stream<int[]> stream2 = IntStream.rangeClosed(1, 100)
+                                 .filter(num -> num % 2 == 0)//IntStream
+                                 .mapToObj(num -> new int[]{num, num * num});
+```
+
+짝수를 찾아 해당 수, 해당 수 제곱을 배열로 리턴한 예이다.
+
 #### OptionalInt
 합계에서는 0이라는 기본 값이 문제가 되지 않지만, IntStream에서 최대값을 찾을 때 0이라는 기본값이 있다면 이때문에 잘못된 결과가 도출될 수 있다. element가 없는 상황인지 실제 최대값이 0인지 구분할 수 없기 때문이다.  
 
 값의 존재 여부를 알 수 있는 Optional이 있다. Optional은 reference type뿐 아니라 기본형 버전도 제공한다.
 **OptionalInt**, **OptionalDouble**, **OptionalLong** 3가지를 제공한다.
 
-아래 코드는 값이 없을 때(menu가 empty), 기본값을 1로 설정했다.
+아래 코드는 최대값 element를 찾는다. 만약 최대값이 없을 때(menu가 empty), 기본값을 1로 설정했다.
 
 ``` java
 OptionalInt maxCalories = menu.stream()
@@ -370,10 +387,62 @@ OptionalInt maxCalories = menu.stream()
 int max = maxCalories.orElse(1);
 ```
 
-### 숫자 범위
+### range, rangeClosed
+자바 8의 IntStream, LongStream는 정적 메서드 **range**, **rangeClosed**를 제공한다.  
+**range**, **rangeClosed** 메서드는 특정 범위의 숫자 스트림을 만들수 있다.  
+
+**range** 메서드는 시작값과 종료값이 범위에 포함되지 않는다.  
+**rangeClosed** 메서드는 시작값과 종료값이 범위에 포함된다.  
+아래 코드는 range, rangeClosed의 예이다.
+
+``` java
+IntStream range1 = IntStream.range(1, 100);//2~99
+IntStream range2 = IntStream.rangeClosed(1, 100);//1~100
+```
+
 ### 숫자 스트림 활용 : 피타고라스 수
 
 ## 스트림 만들기
+다양한 방식으로 스트림을 만드는 법을 알아보자.
+
+### Stream.of
+정적메서드 Stream.of는 임의의 값을 인수로 받아 스트림을 만들 수 있다.
+
+아래 코드는 of로 문자열 스트림을 만들어 대문자로 매핑 후 출력하는 예이다.
+``` java
+Stream<String> stream = Stream.of("Modern", "Java", "In", "Action");
+stream.map(String::toUpperCase).forEach(System.out::println);
+```
+### Stream.ofNullable
+자바 9에서 추가된 메서드로, null이 될 수 있는 객체를 스트림으로 만들 수 있다.  
+단일 element를 포함한 스트림을 리턴하며, null일 경우 empty 스트림을 리턴한다.
+
+ofNullable이 없이 스트림을 생성할 경우, 명시적으로 null check를 해주어야 한다.
+
+``` java
+//명시적 check
+Stream<String> checkStream = (value == null) ? Stream.empty() : Stream.of(value);
+//ofNullable
+Stream<String> nullableStream = Stream.ofNullable(value);
+```
+
+null일수도 있는 객체를 포함하는 스트림 값을 flatMap과 사용하는 상황에서 더 유용하게 사용할 수 있다. 예를 살펴보자.
+
+``` java
+Stream.of("java.specification.name", "java.vm.version", "user")
+      .flatMap(key -> Stream.ofNullable(System.getProperty(key)))
+      .forEach(System.out::println);
+//출력
+//Java Platform API Specification
+//openj9-0.23.0
+```
+
+System.getProperty는 key에 해당하는 값이 있으면 리턴하고, 없으면 null을 리턴한다.  
+user에 해당하는 값이 없으므로 출력이 2개만 되는것을 확인할 수 있다.
+
+### Arrays.stream
+배열을 인수로 받아 스트림을 만들 수 있다.
+int배열을 IntStream을 리턴하고, Integer 배열은 Stream\<Integer\>을 리턴한다.
 
 ## Reference
 - Modern Java in Action
