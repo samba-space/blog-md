@@ -231,12 +231,14 @@ System.out.println("num2 = " + num2);
 //num2 = Optional[6]
 ```
 
-> 쇼트서킷
-
-### reduce
+### 쇼트서킷
+논리연산자와 조합된 다른 연산식이나 조건식이 생략되는 경우를 **쇼트서킷**이라 한다.  
+allMatch, noneMatch, findFirst, findAny, limit 등의 연산은 모든 스트림 element를 처리하지  
+않고도 결과를 반환할 수 있다. 원하는 요소를 즉시 결과를 반환할 수 있다.
+## 리듀싱
 **reduce** 메서드는 결과가 나올 때까지 스트림의 모든 element를 반복적으로 처리한다.
 
-#### 장점, 병렬화
+### 장점, 병렬화
 reduce를 이용하면 내부 반복이 추상화되면서 내부 구현에서 병렬로 reduce를 실행할 수 있게 된다.  
 기존의 반복적으로 합계를 구하는 방법(mutable accumulator pattern)은 변수(sum)를 공유해야 하므로 병렬화하기 쉽지 않다.(병렬화와 거리가 먼 기법)
 
@@ -248,7 +250,7 @@ int sum = numbers.parallelStream().reduce(0, Integer::sum);
 
 위의 코드를 병렬로 실행하려면 reduce에 넘겨준 람다의 상태가 바뀌지 말아야 하며, 연산 순서와 관계 없이 결과가 바뀌지 않는 구조여야 한다.
 
-#### 1. sum
+### sum
 숫자 리스트의 합계를 구할 때, reduce를 살펴보자.  
 
 ``` java
@@ -279,7 +281,7 @@ Optional<T> reduce(BinaryOperator<T> accumulator);
 이 경우 Optional을 반환하는 이유는 스트림에 element가 없을 경우, 초기 값이 없어  
 합계를 반환할 수 없기 때문이다.
 
-#### max, min
+### max, min
 ``` java
 Optional<Integer> max = numbers.stream().reduce(Integer::max);
 Optional<Integer> min = numbers.stream().reduce(Integer::min);
@@ -288,7 +290,7 @@ Optional<Integer> min = numbers.stream().reduce(Integer::min);
 max의 경우 람다 표현식 ```(x, y) -> x > y ? x : y``` 로 사용할 수 있지만,  
 위와 같이 메서드 참조를 사용하면 가독성이 더 좋다.
 
-#### map-reduce 패턴
+### map-reduce 패턴
 map과 reduce를 연결하는 기법으로 쉽게 병렬화하는 특징이 있다.(구글이 웹검색에 적용하면서 
 유명해졌다.)
 
@@ -319,9 +321,27 @@ sorted, distinct 연산은 과거의 이력을 알고 있어야 한다. 어떤 e
 모든 요소가 버퍼에 추가되어 있어야 한다. 연산을 수행하는 데 필요한 저장소 크기는 정해져있지 않다.
 
 #### 중간 최종 연산 표
-
-## 숫자형 스트림
-### 기본형 특화 스트림
+|연산|형식|반환 형식|사용된 함수형<br>인터페이스 형식|함수 디스크립터|
+|--|---|---|---|---|
+|filter|중간 연산|Stream\<T>|Predicate\<T>|T -> boolean|
+|distinct|중간 연산<br>(상태 있는 언바운드)|Stream\<T>|||
+|takeWhile|중간 연산|Stream\<T>|Predicate\<T>|T -> boolean|
+|dropWhile|중간 연산|Stream\<T>|Predicate\<T>|T -> boolean|
+|skip|중간 연산<br>(상태 있는 바운드)|Stream\<T>|long||
+|limit|중간 연산<br>(상태 있는 바운드)|Stream\<T>|long||
+|map|중간 연산|Stream\<R>|Function\<T, R>|T -> R|
+|flatMap|중간 연산|Stream\<R>|Function\<T, Stream\<R>>|T -> Stream\<R>|
+|sorted|중간 연산<br>(상태 있는 언바운드)|Stream\<T>|Comparator\<T>|(T, T) -> int|
+|anyMatch|최종 연산|boolean|Predicate\<T>|T -> boolean|
+|noneMatch|최종 연산|boolean|Predicate\<T>|T -> boolean|
+|allMatch|최종 연산|boolean|Predicate\<T>|T -> boolean|
+|findAny|최종 연산|Optional\<T>|||
+|findFirst|최종 연산|Optional\<T>|||
+|foreach|최종 연산|void|Consumer\<T>|T -> void|
+|collect|최종 연산|R|Collector\<T, A, R>||
+|reduce|최종 연산<br>(상태 있는 바운드)|Optional\<T>|BinaryOperator\<T>|(T, T) -> T|
+|count|최종 연산|long|||
+## 숫자형 스트림 (기본형 특화 스트림)
 자바 8에서는 스트림 API 박싱 비용을 피할 수 있도록, 3가지 기본형 특화 스트림(primitive stream specialization)을 제공한다. 각 인터페이스는 sum, max 등 숫자 관련 리듀싱 연산 수행 메서드를 제공한다.
 
 - int : IntStream
@@ -330,7 +350,7 @@ sorted, distinct 연산은 과거의 이력을 알고 있어야 한다. 어떤 e
 
 특화 스트림은 오직 boxing 과정에서 일어나는 효율성과 관련 있으며 스트림에 추가 기능을 제공하지는 않는다.
 
-#### mapToInt, mapToDouble, mapToLong
+### mapToInt, mapToDouble, mapToLong
 스트림을 특화 스트림으로 변환할 때 세가지 메서드를 가장 많이 사용한다.  
 map과 정확히 같은 기능을 수행하지만, ```Stream<T>``` 대신 특화 스트림을 반환한다.
 
@@ -343,7 +363,7 @@ int calories = menu.stream()
 위의 예에서 mapToInt는 ```Stream<Integer>```가 아닌 ```IntStream```을 반환한다.  
 또, IntStream이 제공하는 sum메서드를 이용해 합계를 구한다. 스트림이 비어있다면 sum은 0을 반환한다.  
 IntStream은 max, min, average 등의 유틸 메서드도 쩨공한다.
-#### boxed
+### boxed
 boxed 메서드로 특화 스트림에서 스트림으로 복원할 수있다. IntStream은 기본형의 정수값만 만들 수 있다.  
 IntStream의 map 메서드는 IntUnaryOperator(int를 인수로 받아 int를 반환) 람다를 인수로 받는다.  
 만약 int가 아닌 Dish같은 객체값을 반환하고 싶다면 일반 스트림의 map 연산이 필요하다.
@@ -355,7 +375,7 @@ IntStream intStream = menu.stream().mapToInt(Dish::getCalories);
 Stream<Integer> stream = intStream.boxed();
 ```
 
-#### mapToObj
+### mapToObj
 특화 스트림의 요소에 인수로 주어진 함수를 적용한 결과로 구성된 **객체 값 스트림**을 반환한다.  
 특화 스트림의 boxed, map을 mapToObj 하나로 구현할 수 있다. 예를 살펴보자.  
 
@@ -372,7 +392,7 @@ Stream<int[]> stream2 = IntStream.rangeClosed(1, 100)
 
 짝수를 찾아 해당 수, 해당 수 제곱을 배열로 리턴한 예이다.
 
-#### OptionalInt
+### OptionalInt
 합계에서는 0이라는 기본 값이 문제가 되지 않지만, IntStream에서 최대값을 찾을 때 0이라는 기본값이 있다면 이때문에 잘못된 결과가 도출될 수 있다. element가 없는 상황인지 실제 최대값이 0인지 구분할 수 없기 때문이다.  
 
 값의 존재 여부를 알 수 있는 Optional이 있다. Optional은 reference type뿐 아니라 기본형 버전도 제공한다.
@@ -399,8 +419,6 @@ int max = maxCalories.orElse(1);
 IntStream range1 = IntStream.range(1, 100);//2~99
 IntStream range2 = IntStream.rangeClosed(1, 100);//1~100
 ```
-
-### 숫자 스트림 활용 : 피타고라스 수
 
 ## 스트림 만들기
 다양한 방식으로 스트림을 만드는 법을 알아보자.
@@ -442,8 +460,113 @@ user에 해당하는 값이 없으므로 출력이 2개만 되는것을 확인�
 
 ### Arrays.stream
 배열을 인수로 받아 스트림을 만들 수 있다.
-int배열을 IntStream을 리턴하고, Integer 배열은 Stream\<Integer\>을 리턴한다.
+int배열을 IntStream을 리턴하고, Integer 배열은 Stream\<Integer\>을 리턴한다.  
 
+``` java
+int[] numbers = {2, 3, 5, 7, 11, 13};
+int sum = Arrays.stream(numbers).sum();
+```
+
+Arrays.stream은 Stream.of와 차이가 있다.  
+reference 타입 배열에서는 차이가 없지만, primitive 타입 배열에서 차이가 있다.  
+
+아래는 Arrays.stream과 Stream.of의 차이를 비교하는 코드이다.
+
+``` java
+int[] ints = {1, 2, 3, 4, 5};
+
+Stream<int[]> ofStream = Stream.of(ints);
+//static<T> Stream<T> of(T t)
+
+IntStream arraysStream = Arrays.stream(ints);
+//static IntStream stream(int[] array)
+
+
+Integer[] integers = {1, 2, 3, 4, 5};
+
+Stream<Integer> ofStream2 = Stream.of(integers);
+//static<T> Stream<T> of(T... values)
+//public static<T> Stream<T> of(T... values) {
+//        return Arrays.stream(values);
+//}
+
+Stream<Integer> arraysStream2 = Arrays.stream(integers);
+//static <T> Stream<T> stream(T[] array)
+```
+
+int[]일 경우, Stream.of는 int[]를 객체로 인식하여, 인수가 T타입인 of가 호출된다.  
+Arrays.stream은 int[]타입 인수를 가진 메서드가 호출되며, IntStream을 리턴한다.  
+
+Integer[]일 경우, 두 메서드 모두 Stream<Integer>를 반환한다.
+
+### Files.lines
+파일을 처리하는 등의 I/O 연산에 사용하는 자바의 NIO API(비블록 I/O)도 스트림 API를 
+활용할 수 있도록 업데이트되었다.  
+**Files.lines** 메서드로 주어진 파일의 각 행 요소를 반환하는 스트림을 얻을 수 있다.
+
+```java
+long uniqueWords = 0;
+        try (Stream<String> lines = Files.lines(Paths.get("data.txt"), Charset.defaultCharset())) {
+            uniqueWords = lines.flatMap(line -> Arrays.stream(line.split(" ")))
+                               .distinct()
+                               .count();
+        } catch (IOException e) {
+        }
+```
+
+스트림의 source가 I/O 자원이므로 try/catch로 감쌌고, 메모리 누스를 막으려면 자원은 닫아야 한다.  
+Stream 인터페이스는 자원을 자동으로 해제할 수 있는 **AutoCloseable** 인터페이스를 구현하므로 try-finally가 필요없다.
+즉, try-with-resources로 구현할 수 있다. try-with-resources는 try에 자원객체를 전달하면, try 코드 블록이 끝나면  
+자동으로 자원을 종료해주는 기능이다.
+> try-with-reources는 java 7에서 추가된 기능이다.
+
+### 함수로 무한 스트림
+함수에서 스트림을 만들 수 있는 **Stream.iterate**, **Stream.generate**를 제공한다.  
+두 메서드로 크기가 고정되지 않은 무한스트림을 만들수 있다. 보통은 크기를 제한하기 위해 limit(n)와 함께 연결해서 사용한다.
+
+#### Stream.iterate
+**iterate** 메서드는 초기 값, 람다(UnaryOperator\<T>)를 인수로 받아서 새로운 값을 무한으로 생산할 수 있다.
+``` java
+Stream.iterate(0, n -> n + 2)
+      .limit(10)//limit없다면 스트림은 unbound상태이다.
+      .forEach(System.out::println);
+```
+
+자바 9에서 iterate 메서드는 Predicate를 지원한다.  
+두번째 인수로 Predicate를 받아, 언제까지 작업을 수행할 것인지의 기준으로 사용한다.
+
+``` java
+IntStream.iterate(0, n -> n < 100, n -> n + 4)
+         .forEach(System.out::println);
+
+//filter로 사용 시, filter는 작업 종료를 알지 못한다.
+IntStream.iterate(0, n -> n + 4)
+         .filter(n -> n < 100)
+         .forEach(System.out::println);
+
+//쇼트서킷을 지원하는 takeWhile을 사용하면 된다.
+IntStream.iterate(0, n -> n + 4)
+         .takeWhile(n -> n < 100)
+         .forEach(System.out::println);
+```
+
+#### Stream.generate
+**generate** 메서드도 무한 스트림을 만들 수 있다. iterate와 차이점은 generate는 생산된 각 값을 연속적으로 계산하지 않는다.  
+generate는 Supplier\<T>를 인수로 받아서 새로운 값을 생성한다.  
+
+아래 코드는 랜덤한 수 5개를 생성하는 예이다.
+
+``` java
+Stream.generate(Math::random)
+      .limit(5)//limit이 없다면 스트림은 unbound 상태
+      .forEach(System.out::println);
+```
+
+위의 코드에서 supplier는 상태가 없는 메서드이다.(Math.random)  
+즉 나중에 계산에 사용할 어떤 값도 저장하지 않는다.  
+supplier가 꼭 상태가 없어야하는 것은 아니지만 **병렬 코드에서 상태가 있는 supplier는 안전하지 않다.**  
+**스트림을 병렬처리하려면 불변 상태를 유지해야한다.**
 ## Reference
 - Modern Java in Action
 - https://docs.oracle.com/javase/8/docs/api/java/util/stream/Stream.html
+- https://www.techiedelight.com/difference-stream-of-arrays-stream-java/

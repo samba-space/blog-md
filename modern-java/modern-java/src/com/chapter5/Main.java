@@ -4,8 +4,10 @@ import com.common.Dish;
 
 import java.io.IOException;
 import java.lang.reflect.Array;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
@@ -76,6 +78,27 @@ public class Main {
         Stream<Integer> arraysStream2 = Arrays.stream(integers);
         //static <T> Stream<T> stream(T[] array)
 
+        long uniqueWords = 0;
+        try (Stream<String> lines = Files.lines(Paths.get("data.txt"), Charset.defaultCharset())) {
+            uniqueWords = lines.flatMap(line -> Arrays.stream(line.split(" ")))
+                               .distinct()
+                               .count();
+        } catch (IOException e) {
+        }
 
+        IntStream.iterate(0, n -> n < 100, n -> n + 4)
+                .forEach(System.out::println);
+
+        IntStream.iterate(0, n -> n + 4)
+                .filter(n -> n < 100)
+                .forEach(System.out::println);
+
+        IntStream.iterate(0, n -> n + 4)
+                .takeWhile(n -> n < 100)
+                .forEach(System.out::println);
+
+        Stream.generate(Math::random)
+                .limit(5)
+                .forEach(System.out::println);
     }
 }
