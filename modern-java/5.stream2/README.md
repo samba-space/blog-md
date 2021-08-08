@@ -119,7 +119,7 @@ List<Integer> dishNameLengths = menu.stream()
 
 예를 들어 단어 목록이 있고, 단어 목록의 고유 문자로 이루어진 목록을 만들어 보자.
 
-```java
+``` java
 List<String> words = Arrays.asList("modern", "java", "action");
         
 words.stream()//Stream<String>
@@ -264,19 +264,15 @@ int sum2 = numbers.stream()
 
 스트림이 하나의 값으로 줄어들 때까지 람다는 각 element를 반복해서 조합한다.
 
-```java 
-T reduce(T identity, BinaryOperator<T> accumulator); 
-```
+```T reduce(T identity, BinaryOperator<T> accumulator);```
 
 reduce의 각 파라미터는 다음과 같다.
 - T : 초기 값  
-- BinaryOperator\<T\> : 2개의 element의 조합해서 새로운 값을 만든다.
+- BinaryOperator\<T> : 2개의 element의 조합해서 새로운 값을 만든다.
 
 초기 값 파라미터가 없는 reduce 메서드는 아래와 같다.
 
-``` java
-Optional<T> reduce(BinaryOperator<T> accumulator);
-```
+```Optional<T> reduce(BinaryOperator<T> accumulator);```
 
 이 경우 Optional을 반환하는 이유는 스트림에 element가 없을 경우, 초기 값이 없어  
 합계를 반환할 수 없기 때문이다.
@@ -504,7 +500,7 @@ Integer[]일 경우, 두 메서드 모두 Stream<Integer>를 반환한다.
 활용할 수 있도록 업데이트되었다.  
 **Files.lines** 메서드로 주어진 파일의 각 행 요소를 반환하는 스트림을 얻을 수 있다.
 
-```java
+``` java
 long uniqueWords = 0;
         try (Stream<String> lines = Files.lines(Paths.get("data.txt"), Charset.defaultCharset())) {
             uniqueWords = lines.flatMap(line -> Arrays.stream(line.split(" ")))
