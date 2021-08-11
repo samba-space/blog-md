@@ -10,6 +10,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.function.UnaryOperator;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -100,5 +101,15 @@ public class Main {
         Stream.generate(Math::random)
                 .limit(5)
                 .forEach(System.out::println);
+
+        Long collect = menu.stream().collect(counting());
+        long count = menu.stream().count();
+
+        Optional<Dish> mostCalorieDish = menu.stream().collect(maxBy(Comparator.comparingInt(Dish::getCalories)));
+
+        long totalCalories = menu.stream().collect(summingInt(Dish::getCalories));
+
+        menu.stream().map(Dish::getName).collect(Collectors.joining());
+        
     }
 }
