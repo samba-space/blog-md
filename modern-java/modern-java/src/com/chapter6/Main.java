@@ -26,6 +26,7 @@ public class Main {
                 new Dish("pizza", true, 221, Dish.Type.OTHER),
                 new Dish("prawns", false, 220, Dish.Type.FISH),
                 new Dish("salmon", false, 111, Dish.Type.FISH)
+                
         );
 
         Map<Dish.Type, List<Dish>> collect = menu.stream()
