@@ -37,15 +37,31 @@ public class Main {
         Map<String, List<String>> dishTags = new HashMap<>();
         dishTags.put("pork", Arrays.asList("greasy", "salty"));
 
-        Map<Dish.Type, Set<String>> collect2 = menu.stream()
-                .collect(groupingBy(Dish::getType,
-                        flatMapping(dish -> dishTags.get(dish.getName()).stream(), toSet())
-                        ));
+//        Map<Dish.Type, Set<String>> collect2 = menu.stream()
+//                .collect(groupingBy(Dish::getType,
+//                        flatMapping(dish -> dishTags.get(dish.getName()).stream(), toSet())
+//                        ));
+//
+//        Map<Dish.Type, Optional<Dish>> collect3 = menu.stream().collect(
+//                groupingBy(Dish::getType,
+//                        maxBy(Comparator.comparingInt(Dish::getCalories)))
+//        );
+//        Collection<Dish> collect4 = menu.stream().collect(toCollection(ArrayList::new));
+//
+//        Optional<Dish> mostCalorieDish = menu.stream()
+//                        .collect(maxBy(Comparator.comparingInt(Dish::getCalories)));
+//
+//        int totalCalories = menu.stream().collect(summingInt(Dish::getCalories));
+//
+//        double avgCalories = menu.stream().collect(averagingInt(Dish::getCalories));
 
-        Map<Dish.Type, Optional<Dish>> collect3 = menu.stream().collect(
-                groupingBy(Dish::getType,
-                        maxBy(Comparator.comparingInt(Dish::getCalories)))
-        );
-        Collection<Dish> collect4 = menu.stream().collect(toCollection(ArrayList::new));
+        IntSummaryStatistics menuStatistics = menu.stream().collect(summarizingInt(Dish::getCalories));
+
+
+        System.out.println("menuStatistics = " + menuStatistics);
+
+        String shortMenu = menu.stream().map(Dish::getName).collect(joining());
+        String shortMenu = menu.stream().map(Dish::getName).collect(joining(", "));
+
     }
 }
