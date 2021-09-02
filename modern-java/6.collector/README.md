@@ -74,3 +74,12 @@ IntSummaryStatistics menuStatistics = menu.stream().collect(summarizingInt(Dish:
 스트림의 각 객체의 toString 메서드를 호출해서 추출한 모든 문자열을 하나의 문자열로 연결해서 반환한다.
 joining 메서드는 내부적으로 StringBuilder를 이용해서 문자열을 하나로 만든다.
 
+아래 코드는 요리의 이름을 연결한 예이다. join은 구분자를 넣어줄 수 있게 오버로딩된 메서드도 제공한다.
+
+``` java
+String shortMenu = menu.stream().map(Dish::getName).collect(joining());
+//출력 : porkbeefchicken
+String shortMenu = menu.stream().map(Dish::getName).collect(joining(", "));
+//출력 : pork, beef, chicken
+```
+
