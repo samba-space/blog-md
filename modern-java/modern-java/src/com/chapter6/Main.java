@@ -61,7 +61,17 @@ public class Main {
         System.out.println("menuStatistics = " + menuStatistics);
 
         String shortMenu = menu.stream().map(Dish::getName).collect(joining());
-        String shortMenu = menu.stream().map(Dish::getName).collect(joining(", "));
+
+        int totalCalories = menu.stream().collect(reducing(0, Dish::getCalories, (i, j) -> i + j));
+        Map<Dish.Type, List<Dish>> dishesByType = menu.stream().collect(groupingBy(Dish::getType));
+
+        Map<Dish.Type, List<Dish>> caloricDishedByType = menu.stream()
+                .collect(groupingBy(Dish::getType, filtering(dish -> dish.getCalories() > 500, toList())));
+        Map<Dish.Type, List<String>> dishNamesByType = menu.stream()
+                .collect(groupingBy(Dish::getType, mapping(Dish::getName, toList())));
+        Map<Dish.Type, Optional<Dish>> mostCaloricByType = menu.stream()
+                .collect(groupingBy(Dish::getType,
+                        maxBy(Comparator.comparingInt(Dish::getCalories))));
 
     }
 }

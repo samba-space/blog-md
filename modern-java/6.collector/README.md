@@ -83,3 +83,98 @@ String shortMenu = menu.stream().map(Dish::getName).collect(joining(", "));
 //출력 : pork, beef, chicken
 ```
 
+### reducing (범용 리듀싱 요약 연산)
+앞서 살펴본 모든 컬렉터는 reducing 팩토리 메서드로도 정의할 수 있다.  
+앞서 특화된 컬렉터를 사용한 이유는 프로그래머의 편의성, 가독성 때문이다.  
+
+아래 코드는 모든 메뉴의 칼로리 합계를 계산한다.
+
+``` java
+int totalCalories = menu.stream().collect(reducing(0, Dish::getCalories, (i, j) -> i + j));
+```
+
+reducing 메서드는 아래 3가지 인수를 받으며 각각은 아래와 같다.
+- U identity : 리듀싱 연산의 시작 값 또는 스트림에 요소가 없을 때는 반환 값
+- Function<? super T, ? extends U> mapper : 변환 함수(mapping)
+- BinaryOperator\<U> op : 같은 종류의 두 항목을 같은 종류의 하나의 값 반환한다.
+
+인수가 1개인 reducing 메서드는 스트림의 첫번째 요소를 시작요소로 하고, 항등 함수(자신을 반환하는 함수)가 변환 함수에 해당한다.  빈 스트림일 경우 Optional을 반환한다.
+
+스트림 인터페이스에서 제공하는 메서드를 이용하는 것에 비해 컬렉터를 이용하는 코드가 더 복잡하다.  
+대신 재사용성과 커스터마이즈 가능성을 제공하는 높은 수준의 추상화와 일반화를 얻을 수 있다.
+
+## 그룹화
+명령형으로 그룹화를 구현하려면 까다롭고, 할일도 많고, 에러도 자주 발생한다.  
+자바 8의 함수형을 이용하면 가독성 있는 한 줄의 코드로 그룹화를 구현할 수 있다.
+
+### groupingBy
+groupingBy 팩토리 메서드를 이용해서 쉽게 그룹화할 수 있다.  
+
+아래 코드는 메뉴를 타입별로 요리를 그룹화 했다. 여기서 groupingBy의 인수로 전달된 함수 getType은  
+이 함수를 기준으로 스트림이 그룹화되므로 분류 함수(classification function)라고 부른다.
+
+``` java
+Map<Dish.Type, List<Dish>> dishesByType = menu.stream()
+        .collect(groupingBy(Dish::getType));
+```
+
+#### 그룹화된 요소를 조작
+groupingBy 메서드는 두번째 인수로 컬렉터를 받도록 오버로드되어 있다.  
+또 해당 메서드를 이용해 그룹화된 요소를 조작할 수 있다.  
+
+**filtering**  
+아래 코드의 filtering 메서드는 Collectors의 정적 팩토리 메서드이다.  
+filtering 메서드의 프레디케이트로 각 그룹의 요소와 필터링 된 요소를 재그룹화 한다.
+
+``` java
+Map<Dish.Type, List<Dish>> caloricDishedByType = menu.stream()
+        .collect(groupingBy(Dish::getType, filtering(dish -> dish.getCalories() > 500, toList())));
+
+//stream.filter.groupingBy는 만약 FISH 타입에 해당하는 요소가 없다면 키 자체가 사라진다.
+//반면 위의 코드는 FISH=[] 처럼 키 자체가 사라지지 않는다.
+```
+
+**mapping**  
+mapping메서드는 그룹화된 요소를 변환하는 작업을 할 수 있다.  
+아래 처럼 각 그룹의 요리 이름 목록으로 변환할 수 있다.
+
+``` java
+Map<Dish.Type, List<String>> dishNamesByType = menu.stream()
+        .collect(groupingBy(Dish::getType, mapping(Dish::getName, toList())));
+```
+
+또, flatMapping으로 두 수준의 리스트를 한 수준으로 평면화할 수 있다.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
