@@ -118,11 +118,22 @@ Map<Dish.Type, List<Dish>> dishesByType = menu.stream()
         .collect(groupingBy(Dish::getType));
 ```
 
-#### 그룹화된 요소를 조작
+또, 일반적으로 스트림에서 같은 그룹으로 분류된 모든 요소에 리듀싱 작업을 수행할 때는 groupingBy에  
+두번째 인수로 전달한 컬렉터를 사용한다. mapping 메서드로 만들어진 컬렉터도 groupingBy와 자주 사용된다.  
+
+다음은 메뉴에 있는 모든 요리의 칼로리 합계를 구하려고 만든 컬렉터(summingInt)를 재사용한 코드이다.
+
+``` java
+Map<Dish.Type, Integer> totalCaloriesByType = menu.stream()
+        .collect(groupingBy(Dish::getType,
+                summingInt(Dish::getCalories)));
+```
+
+### 그룹화된 요소를 조작
 groupingBy 메서드는 두번째 인수로 컬렉터를 받도록 오버로드되어 있다.  
 또 해당 메서드를 이용해 그룹화된 요소를 조작할 수 있다.  
 
-**filtering**  
+#### filtering
 아래 코드의 filtering 메서드는 Collectors의 정적 팩토리 메서드이다.  
 filtering 메서드의 프레디케이트로 각 그룹의 요소와 필터링 된 요소를 재그룹화 한다.
 
@@ -134,8 +145,12 @@ Map<Dish.Type, List<Dish>> caloricDishedByType = menu.stream()
 //반면 위의 코드는 FISH=[] 처럼 키 자체가 사라지지 않는다.
 ```
 
-**mapping**  
-mapping메서드는 그룹화된 요소를 변환하는 작업을 할 수 있다.  
+#### mapping
+mapping 메서드는 그룹화된 요소를 변환하는 작업을 할 수 있다.(mapping 메서드는 groupingBy와 자주 사용된다.)  
+mapping 메서드는 스트림의 인수를 변환하는 함수와 변환 함수의 결과 객체를 누적하는 컬렉터를 인수로 받는다. 
+입력 요소를 누적하기 전에 매핑 함수를 적용해서 주어진 형식의 컬렉터에 맞게 변환하는 역할을 한다.  
+또, flatMapping으로 두 수준의 리스트를 한 수준으로 평면화할 수 있다.
+
 아래 처럼 각 그룹의 요리 이름 목록으로 변환할 수 있다.
 
 ``` java
@@ -143,38 +158,57 @@ Map<Dish.Type, List<String>> dishNamesByType = menu.stream()
         .collect(groupingBy(Dish::getType, mapping(Dish::getName, toList())));
 ```
 
-또, flatMapping으로 두 수준의 리스트를 한 수준으로 평면화할 수 있다.
+각 요리 형식에 존재하는 모든 칼로리 레벨을 알고 싶을 경우, 아래처럼 구현할 수 있다.
 
+``` java
+Map<Dish.Type, Set<CaloricLevel>> caloricLevelsByType = menu.stream()
+        .collect(groupingBy(Dish::getType, mapping(dish -> {
+                if (dish.getCalories() <= 400) return CaloricLevel.DIET;
+                else return CaloricLevel.FAT;
+        }, toSet())));
+```
 
+Set의 형식을 정하고 싶다면 toSet 대신 toCollection을 이용하여 toCollection(HashSet::new) 같이 Set의 형식을 정할 수 있다.
 
+#### collectingAndThen
+collectingAndThen 팩토리 메서드로 컬렉터가 반환한 결과를 다른 형식으로 활용할 수 있다.  
+collectingAndThen은 적용할 컬렉터와 변환 함수를 인수로 받아 다른 컬렉터를 반환한다.  
 
+아래 코드는 각 메뉴 타입별 가장 높은 칼로리의 음식을 그룹화하는 예이다.
 
+``` java
+Map<Dish.Type, Dish> mostCaloricByType = menu.stream()
+        .collect(groupingBy(Dish::getType,
+                collectingAndThen(
+                        maxBy(Comparator.comparingInt(Dish::getCalories)),//적용할 컬렉터
+                        Optional::get//변환 함수
+                )));
+```
 
+maxBy 팩토리 메서드가 생성하는 컬렉터의 결과 형식에 따라 맵의 값이 Optional 형식이 된다.  
+collectingAndThen을 사용하지 않고, 그룹화하면 ```Map<Dish.Type, Optional<Dish>>``` 타입이 된다.  
+그런데 groupingBy 컬렉터는 첫 번째 요소를 찾은 이후에 맵에 새로운 키를 추가한다.(LAZY)  
+그렇기 때문에 메뉴의 요리 중 Optional.empty()를 값으로 가지는 요리는 존재하지 않는다.  
+그러므로 변환 함수에 Optional::get을 사용하여 Optional에 포함된 값을 추출하여도 안전한 코드이다.
 
+## 분할(partitioningBy)
+분할은 분할 함수(partitioning function)라 불리는 Predicate를 분류 함수로 사용하는 특수한 그룹화 기능이다.  
+Predicate 분류 함수를 사용하므로 그룹화 맵은 true, false 두 개의 그룹으로 분류된다.  
+분할의 장점은 참, 거짓 두가지 요소의 스트림 리스트를 모두 유지하는 것이다.  
 
+아래 코드는 isVegetarian 분할 함수를 이용하여, 모든 요리를 채식과 채식이 아닌 요리로 분리한 예이다.(filter 메서드로도 구현 가능)
 
+``` java
+Map<Boolean, List<Dish>> partitionedMenu = menu.stream().collect(partitioningBy(Dish::isVegetarian));
+```
 
+또한 컬렉터를 두 번째 인수로 전달할 수 있는 오버로드된 partitioningBy 메서드도 제공된다.  
+아래 예는 채식과 채식이 아닌 요리를 요리 종류로 그룹화해서 두 수준의 맵이 반환되었다.
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+``` java
+Map<Boolean, Map<Dish.Type, List<Dish>>> vegetarianDishesByType = menu.stream()
+        .collect(
+                partitioningBy(Dish::isVegetarian,
+                        groupingBy(Dish::getType)
+                ));
+```

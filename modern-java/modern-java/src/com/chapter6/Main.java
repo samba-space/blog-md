@@ -17,13 +17,13 @@ public class Main {
     public static void main(String[] args) throws IOException {
 
         List<Dish> menu = Arrays.asList(
-                new Dish("pork", false, 400, Dish.Type.MEAT),
-                new Dish("beef", false, 390, Dish.Type.MEAT),
-                new Dish("chicken", false, 389, Dish.Type.MEAT),
-                new Dish("french fries", true, 360, Dish.Type.OTHER),
-                new Dish("rice", true, 300, Dish.Type.OTHER),
-                new Dish("season fruit", true, 222, Dish.Type.OTHER),
-                new Dish("pizza", true, 221, Dish.Type.OTHER),
+                new Dish("pork", false, 600, Dish.Type.MEAT),
+                new Dish("beef", false, 600, Dish.Type.MEAT),
+                new Dish("chicken", false, 600, Dish.Type.MEAT),
+                new Dish("french fries", true, 600, Dish.Type.OTHER),
+                new Dish("rice", true, 600, Dish.Type.OTHER),
+                new Dish("season fruit", true, 600, Dish.Type.OTHER),
+                new Dish("pizza", true, 600, Dish.Type.OTHER),
                 new Dish("prawns", false, 220, Dish.Type.FISH),
                 new Dish("salmon", false, 111, Dish.Type.FISH)
 
@@ -55,23 +55,36 @@ public class Main {
 //
 //        double avgCalories = menu.stream().collect(averagingInt(Dish::getCalories));
 
-        IntSummaryStatistics menuStatistics = menu.stream().collect(summarizingInt(Dish::getCalories));
 
-
-        System.out.println("menuStatistics = " + menuStatistics);
-
-        String shortMenu = menu.stream().map(Dish::getName).collect(joining());
-
-        int totalCalories = menu.stream().collect(reducing(0, Dish::getCalories, (i, j) -> i + j));
-        Map<Dish.Type, List<Dish>> dishesByType = menu.stream().collect(groupingBy(Dish::getType));
 
         Map<Dish.Type, List<Dish>> caloricDishedByType = menu.stream()
                 .collect(groupingBy(Dish::getType, filtering(dish -> dish.getCalories() > 500, toList())));
-        Map<Dish.Type, List<String>> dishNamesByType = menu.stream()
-                .collect(groupingBy(Dish::getType, mapping(Dish::getName, toList())));
-        Map<Dish.Type, Optional<Dish>> mostCaloricByType = menu.stream()
+
+        System.out.println("caloricDishedByType = " + caloricDishedByType);
+
+        Map<Dish.Type, Dish> mostCaloricByType = menu.stream()
                 .collect(groupingBy(Dish::getType,
-                        maxBy(Comparator.comparingInt(Dish::getCalories))));
+                        collectingAndThen(
+                                maxBy(Comparator.comparingInt(Dish::getCalories)),
+                                Optional::get
+                        )));
+        Map<Dish.Type, Integer> totalCaloriesByType = menu.stream()
+                .collect(groupingBy(Dish::getType,
+                        summingInt(Dish::getCalories)));
+
+        Map<Dish.Type, Set<CaloricLevel>> caloricLevelsByType = menu.stream()
+                .collect(groupingBy(Dish::getType, mapping(dish -> {
+                    if (dish.getCalories() <= 400) return CaloricLevel.DIET;
+                    else return CaloricLevel.FAT;
+                }, toSet())));
+
+        Map<Boolean, List<Dish>> partitionedMenu = menu.stream().collect(partitioningBy(Dish::isVegetarian));
+
+        Map<Boolean, Map<Dish.Type, List<Dish>>> vegetarianDishesByType = menu.stream()
+                .collect(
+                        partitioningBy(Dish::isVegetarian,
+                                groupingBy(Dish::getType)
+                        ));
 
     }
 }
