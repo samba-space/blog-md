@@ -1,0 +1,11 @@
+<component name="libraryTable">
+  <library name="Gradle: org.openjdk.jmh:jmh-generator-bytecode:1.29">
+    <CLASSES>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.openjdk.jmh/jmh-generator-bytecode/1.29/da930ad7e59da95aab2ef7107a70bff4f31647e2/jmh-generator-bytecode-1.29.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.openjdk.jmh/jmh-generator-bytecode/1.29/846eae2fd815c6d07a0421adb748427525ec798a/jmh-generator-bytecode-1.29-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

@@ -1,0 +1,11 @@
+<component name="libraryTable">
+  <library name="Gradle: org.openjdk.jmh:jmh-generator-reflection:1.29">
+    <CLASSES>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.openjdk.jmh/jmh-generator-reflection/1.29/5107c3d0eceff99cf16aed2768bf04d0e138ef66/jmh-generator-reflection-1.29.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.openjdk.jmh/jmh-generator-reflection/1.29/c53003d8f933c5a0f2215b5cbd6a649192a09e05/jmh-generator-reflection-1.29-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

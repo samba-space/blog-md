@@ -1,0 +1,2 @@
+Benchmark       Mode  Cnt  Score   Error  Units
+Test.rangedSum  avgt   40  6.688 ± 0.644  ms/op
