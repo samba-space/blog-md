@@ -125,7 +125,7 @@ ageOfFriends.entrySet().stream()
 기존에는 찾으려는 key가 존재하지 않으면 null이 반환되어서 에러를 방지하기 위해 null 체크를 해야 했다.  
 이 문제는 getOrDefault메서드를 이용해서 쉽게 해결할 수 있다. getOrDefault 메서드는 맵에 키가 존재하지 않으면 default 값을 반환한다.  
 
-아래 예는 Moon이라는 키가 없으므로 100이 출력된다. 만약 키값이 존재하고 값이 null 일 경우 null이 리턴되는 것을 주의하자.
+아래 예는 Moon이라는 키가 없으므로 100이 출력된다. 만약 키가 존재하고 값이 null 일 경우 null이 리턴되는 것을 주의하자.
 
 ``` java
 Map<String, Integer> ageOfFriends = Map.of("Park", 30, "Kim", 28, "Song", 31);
@@ -134,6 +134,102 @@ Integer ageOfMoon = ageOfFriends.getOrDefault("Moon", 100);
 System.out.println("Moon = " + ageOfPark);
 // 출력 : Moon = 100
 ```
+
+## 계산 패턴
+맵에 키가 존재하는지 여부에 따라 어떤 동작을 실행하고 결과를 저장해야 하는 상황이 있다.  
+다음 3가지 연산이 이런 상황에 도움을 준다.
+- computeIfAbsent : 제공된 키가 없거나 키에 해당하는 값이 null이면, 키를 이용해 새 값을 계산하고 맵에 추가한다.(키가 존재하면 기존 값을 반환(get과 같음))
+- computeIfPresent : 제공된 키가 존재하고, 값이 null 아니면, 새 값을 계산하고 맵에 추가한다.  
+- compute : 제공된 키로 새 값을 계산하고 맵에 저장한다.  
+
+Map\<K, List\<V>>과 같이 여러 값을 저장하는 맵을 처리할 때 유용하게 사용할 수 있다.  
+아래 예는 부서별 멤버 리스트를 가진 맵을 가지고 testing team에 park을 추가한다. 매우 귀찮은 작업이다.
+
+```java
+Map<String, List<String>> memberNameByDept = new HashMap<>();
+String deptName = "testing team";
+List<String> members = memberNameByDept.get(deptName);
+if (members == null) {
+    members = new ArrayList<>();
+    memberNameByDept.put(deptName, members);
+}
+members.add("Park");
+```
+
+이 작업을 computeIfAbsent를 바꾸면, 매우 간결해진다.
+
+```java
+memberNameByDept.computeIfAbsent("develop team", name -> new ArrayList<>())
+                .add("Park");
+```
+
+## 삭제 패턴
+자바 8에서는 키와 값 모두 일치하면 항목을 제거하는 오버로딩된 remove 메서드를 제공한다.  
+
+기존의 코드는 아래와 같이 key 존재여부와 key에 매핑된 값이 내가 보낸 값이랑 일치하는지까지 구현해야한다.  
+
+```java
+if (map.containsKey(key) && Objects.equals(map.get(key), value)) {
+     map.put(key, newValue);
+     return true;
+ } else
+     return false;
+```
+오버로딩된 remove로 구현하면 매우 간단하게 구현할 수 있다.
+
+```java
+map.remove(key, value);
+```
+
+## 교체 패턴
+맵의 항목을 바꾸는 데 사용할 수 있는 2개의 메서드가 추가되었다.
+- replaceAll : BiFunction을 적용한 결과로 각 항목의 값을 교체한다.
+- replace : 키가 존재하면 맵의 값을 바꾼다.
+    - replace(K, V) : Key가 존재하면 V로 값을 바꾼다.
+    - replace(K, oldV, newV) Key, Value 모두 일치하면 newV로 바꾼다.
+
+replaceAll을 이용하여, 부서의 리더이름을 모두 대문자로 바꿔보자.
+
+``` java
+Map<String, String> leaderByDept = new HashMap<>();
+leaderByDept.put("testing team", "Song");
+leaderByDept.put("develop team", "Park");
+
+leaderByDept.replaceAll((dept, leader) -> leader.toUpperCase());
+System.out.println("leaderByDept = " + leaderByDept);
+// 출력 : leaderByDept = {testing team=SONG, develop team=PARK}
+```
+
+## 합침
+새로운 merge 메서드를 이용하여 두 개의 맵을 합치거나 바꿀수 있다.  
+중복된 키의 값을 어떻게 합칠지 결정하는 BiFunction을 인수로 받는다.  
+
+기존의 putAll을 이용하여 두개의 맵을 합치면 중복된 키가 없다면 잘 동작할 것이다.(중복되면 한개만 저장됨)
+
+``` java
+Map<String, String> family = Map.ofEntries(Map.entry("Park", "1111"), Map.entry("Kim", "2222"));
+Map<String, String> friends = Map.ofEntries(Map.entry("Song", "3333"));
+Map<String, String> everyone = new HashMap<>(family);
+everyone.putAll(friends);
+```
+
+forEach와 merge를 이용하여, 키가 중복되면 연락처를 &로 붙여보자.
+
+```java
+Map<String, String> family = Map.ofEntries(Map.entry("Park", "1111"), Map.entry("Kim", "2222"));
+Map<String, String> friends = Map.ofEntries(Map.entry("Park", "4444"), Map.entry("Song", "3333"));
+Map<String, String> everyone = new HashMap<>(family);
+friends.forEach((k, v) ->
+        everyone.merge(k, v, (phone1, phone2) -> phone1 + " & " + phone2));
+System.out.println("everyone = " + everyone);
+// 출력 : everyone = {Song=3333, Kim=2222, Park=1111 & 4444}
+```
+
+merge는 null값과 관련된 복잡한 상황도 처리한다.  
+merge는 전달된 key와 맵에 일치하는 key가 없거나 값이 null이면, 전달된 value로 key에 매핑한다.  
+전달된 key와 일치하는 key가 있고, 값이 null 아니면 기존 값과 전달된 value를 재매핑 함수에 적용한 결과로 값을 바꾼다.  
+만약 그 결과가 null이면 항목을 제거한다.(remove(key))
+
 
 ## 개선된 ConcurrentHashMap
 ConcurrentHashMap은 동시성 친화적이며 최신 기술을 반영한 HashMap 버전이다.  

@@ -38,5 +38,31 @@ public class Main {
 
         Integer ageOfPark = ageOfFriends.getOrDefault("Park", 1);
         System.out.println("ageOfPark = " + ageOfPark);
+
+        Map<String, List<String>> memberNameByDept = new HashMap<>();
+        String deptName = "testing team";
+        List<String> members = memberNameByDept.get(deptName);
+        if (members == null) {
+            members = new ArrayList<>();
+            memberNameByDept.put(deptName, members);
+        }
+        members.add("Park");
+
+        System.out.println(memberNameByDept);
+
+        Map<String, String> leaderByDept = new HashMap<>();
+        leaderByDept.put("testing team", "Song");
+        leaderByDept.put("develop team", "Park");
+
+        leaderByDept.replaceAll((dept, leader) -> leader.toUpperCase());
+        System.out.println("leaderByDept = " + leaderByDept);
+
+        Map<String, String> family = Map.ofEntries(Map.entry("Park", "1111"), Map.entry("Kim", "2222"));
+        Map<String, String> friends = Map.ofEntries(Map.entry("Park", null), Map.entry("Song", "3333"));
+        Map<String, String> everyone = new HashMap<>(family);
+        friends.forEach((k, v) ->
+                everyone.merge(k, v, (phone1, phone2) -> phone1 + " & " + phone2));
+        System.out.println("everyone = " + everyone);
+
     }
 }
