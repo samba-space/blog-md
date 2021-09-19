@@ -1,0 +1,111 @@
+# 
+
+## Optional 적용 패턴
+실제 OPtional을 어떻게 활용할 수 있는지 알아보자.
+
+### Optional 객체 생성
+- Optional.emty : 빈 Optional 객체를 얻을 수 있다.
+```java
+Optional<Car> optCar = Optional.empty();
+```
+
+- Optional.of : null이 아닌 값을 포함하는 Optional을 만들 수 있다.
+```java
+Optional<Car> optCar = Optional.of(car);
+```
+
+car가 null이면 바로 NullPointerException이 발생한다. Optional을 사용하지 않을 경우 Car의 프로퍼티에 접근하려 할 때 에러가 발생할 것이다.
+
+- Optional.ofNullable : null값을 저장할 수 있는 Optional을 만들 수 있다.
+```java
+Optional<Car> optCar = Optional.ofNullable(car);
+```
+
+car가 null이면 빈 Optional 객체가 반환된다.
+
+
+## Optional을 사용한 실용 예제
+네이티브 자바 API는 호환성을 유지하다보니 Optional을 적절하게 활용하지 못하고 있다.  
+Optional 기능을 활용할 수 있도록 utility 메서드를 추가하는 방식으로 이 문제를 해결할 수 있다.
+
+### null이 될 수 있는 대상을 Optional로 감싸기
+Map.get은 일치하는 key가 없다면 null을 반환한다. null보다는 Optional 반환하는 것이 바람직하다.  
+Map.get 메서드의 시그니처는 고칠 수 없지만 get 메서드의 반환 값을 Optional로 감쌀 수 있다.
+
+아래처럼 기존 방식은 null 체크를 하는 등 복잡한 코드를 짜야한다.  
+반면에 Optional을 적용하여 깔끔하고 안전한 코드를 짤 수 있다.
+
+```java
+//기존 방식
+Object value = map.get("key");
+
+//Optional을 적용한 방식
+Optional<Object> value = Optional.ofNullable(map.get("key"));
+```
+
+### Exception과 Optional 클래스
+자바 API는 어떤 이유로 값을 제공할 수 없을 때 null 대신 Exception을 발생 시킨다.  
+null은 if문으로 체크하지만, Exception은 try/catch로 처리해야한다.  
+
+대표적으로 Integer.parseInt가 있는데, 문자열이 정수형태가 아닐 경우 NumberFormatException이 발생한다.  
+기존 Integer.parseInt는 고칠 수 없으므로 Integer.parseInt를 감싸는 utility 메서드를 구현하여,  
+Optional을 반환할 수 있다.
+
+```java
+public class OptionalUtility {
+    
+    private OptionalUtility() {}
+    
+    public static Optional<Integer> stringToInt(String s) {
+        try {
+            return Optional.of(Integer.parseInt(s));//변환 가능하면 Optional 반환
+        } catch (NumberFormatException e) {
+            return Optional.empty();//변환 가능하지 않으면 empty Optional 반환
+        }
+    }
+}
+```
+
+위와 같이 Utility Class를 만들어서 사용하길 권장한다. 문자열을 Optional\<Integer>로 필요할 때 가져다 쓸수 있고,  
+중복해서 try/catch문을 사용하지 않아도 되기 때문이다.
+
+### 기본형 특화 Optional은 사용하지 말자
+OptionalInt, OptionalLong, OptionalDouble과 같이 기본형 특화 Optional을 제공한다.  
+기본형 특화 Optional을 사용하지 말아야하는 이유는 아래와 같이 3가지이다.
+- Optional은 최대 요소가 1개이기 때문이다. 기본형 특화로 성능을 개선할 수 없다.  
+- 기본형 특화 Optional은 Optional이 제공하는 map, flatMap, filter등을 지원하지 않는다.  
+- 기본형 특화 Optional로 생성한 결과는 일반 Optional과 혼용할 수 없다.
+
+### 응용
+예를 통해서 알아보자. properties에서 name에 해당하는 duration을 읽는 예이다.  
+해당 key가 존재하지 않거나 value가 0보다 작거나 정수가 아닌 문자열일 경우 0을 리턴한다.  
+
+기존 optional을 사용하지 않은 코드는 아래와 같으며, 코드가 복잡하고 가독성도 안좋다.
+
+```java
+public int readDuration(Properties props, String name) {
+
+    String value = props.getProperty(name);
+    if (value != null) {
+        try {
+            int result = Integer.parseInt(value);
+            if (result > 0) {
+                return result;
+            }
+        } catch (NumberFormatException nfe) {}
+    }
+    return 0;
+}
+```
+
+Optional을 활용하여 개선한 코드이다. 여러 연산을 서로 연결되는 데이터베이스 질의문과 비슷한 형식을 갖는다.(Stream처럼)  
+자세한 내용은 코드의 주석을 확인해보자.
+
+```java
+public int optionalReadDuration(Properties props, String name) {
+    return Optional.ofNullable(props.getProperty(name))//Optional 객체로 변환
+                   .flatMap(OptionalUtility::stringToInt)//유틸리티 메서드를 이용하여 파싱
+                   .filter(result -> result > 0)//0이상을 필터링한다.
+                   .orElse(0);//위의 과정 중 하나라도 empty Optional을 반환하면 0을 리턴한다.
+}
+```

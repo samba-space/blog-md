@@ -3,6 +3,7 @@ package com.chapter8;
 import com.common.Dish;
 
 import java.io.IOException;
+import java.text.NumberFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -64,5 +65,36 @@ public class Main {
                 everyone.merge(k, v, (phone1, phone2) -> phone1 + " & " + phone2));
         System.out.println("everyone = " + everyone);
 
+        Optional<Car> optCar = Optional.empty();
+        Car car = new Car();
+
+        Map<String, Object> map = new HashMap<>();
+        Object value = map.get("key");
+
+
+    }
+
+    static class Car{
+
+    }
+
+    public static int readDuration(Properties props, String name) {
+
+        String value = props.getProperty(name);
+        if (value != null) {
+            try {
+                int result = Integer.parseInt(value);
+                if (result > 0) {
+                    return result;
+                }
+            } catch (NumberFormatException nfe) {}
+        }
+        return 0;
+    }
+    public static int optionalReadDuration(Properties props, String name) {
+        return Optional.ofNullable(props.getProperty(name))
+                       .flatMap(OptionalUtility::stringToInt)
+                       .filter(result -> result > 0)
+                       .orElse(0);
     }
 }
