@@ -56,7 +56,6 @@ public class Main {
 //        double avgCalories = menu.stream().collect(averagingInt(Dish::getCalories));
 
 
-
         Map<Dish.Type, List<Dish>> caloricDishedByType = menu.stream()
                 .collect(groupingBy(Dish::getType, filtering(dish -> dish.getCalories() > 500, toList())));
 
@@ -86,29 +85,70 @@ public class Main {
                                 groupingBy(Dish::getType)
                         ));
 
+        Person person = new Person();
+        Optional<Person> optPerson = Optional.of(person);
+        
+
+
     }
 
-    public class Person {
+    public static Optional<Insurance> nullSafeFindCheapestInsurance(Optional<Person> person, Optional<Car> car) {
+        return person.flatMap(p -> car.map(c -> findCheapestInsurance(p, c)));
+    }
+
+    private static Insurance findCheapestInsurance(Person person, Car car) {
+        return cheapestCompany;
+    }
+
+
+    public static String getCarInsuranceName(Optional<Person> person) {
+        return person.flatMap(Person::getCar)
+                .flatMap(Car::getInsurance)
+                .map(Insurance::getName)
+                .orElse("Unknown");
+    }
+
+    public static Set<String> getCarInsuranceNames(List<Person> persons) {
+
+        Stream<Optional<String>> stream = persons.stream()
+                .map(Person::getCar)
+                .map(optCar -> optCar.flatMap(Car::getInsurance))
+                .map(optIns -> optIns.map(Insurance::getName));
+        Set<String> result = stream.filter(Optional::isPresent)
+                .map(Optional::get)
+                .collect(Collectors.toSet());
+
+        return persons.stream()
+                .map(Person::getCar)
+                .map(optCar -> optCar.flatMap(Car::getInsurance))
+                .map(optIns -> optIns.map(Insurance::getName))
+                .flatMap(Optional::stream)
+                .collect(Collectors.toSet());
+    }
+
+    public static class Person {
         private Optional<Car> car;
+
         public Optional<Car> getCar() {
             return car;
         }
     }
 
-    public class Car {
+    public static class Car {
         private Optional<Insurance> insurance;
+
         public Optional<Insurance> getInsurance() {
             return insurance;
         }
     }
 
-    public class Insurance {
+    public static class Insurance {
         private String name;
+
         public String getName() {
             return name;
         }
     }
-
 
 
 }
