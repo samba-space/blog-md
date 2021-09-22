@@ -87,4 +87,28 @@ public class Main {
                         ));
 
     }
+
+    public class Person {
+        private Optional<Car> car;
+        public Optional<Car> getCar() {
+            return car;
+        }
+    }
+
+    public class Car {
+        private Optional<Insurance> insurance;
+        public Optional<Insurance> getInsurance() {
+            return insurance;
+        }
+    }
+
+    public class Insurance {
+        private String name;
+        public String getName() {
+            return name;
+        }
+    }
+
+
+
 }

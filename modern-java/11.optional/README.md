@@ -1,7 +1,57 @@
-# 
+# null 대신 Optional 클래스
+역사적으로 프로그래밍 언어에서 null 참조로 값이 없음을 표현해왔다. 그러나 null 참조로 인하여 발생할 수 있는 문제가 많다.  
+이를 보완하기 위해, 자바 8에서는 Optional이라는 새로운 클래스를 제공한다. 
+먼저 null의 문제점에 대해 알아보자.
+
+## null의 문제점
+1965년 토니 호어는 ALGOL을 설계하면서 처음 null 참조가 등장했다. 그 당시에는 null 참조 및 예외로 값이 없는 상황을 가장 단순하게  
+구현할 수 있다고 판단했고 결과적으로 null 및 관련 예외가 탄생했다. 차후에 토니 호어는 null은 십업 달러짜리 실수라고 하기도 했다.  
+null의 이론적, 실용적 문제를 알아보자.
+
+### null로 인한 문제
+- 에러의 근원이다. - NullPointerException은 자바에서 가장 흔히 발생하는 에러이다.
+- 코드를 어지럽힌다. - 중첩된 null 확인 코드(deep doubt)로 인하여 가독성이 떨어진다.
+- 아무 의미가 없다. - null은 아무 의미도 표현하지 않는다. 정적 형식 언어에서 값이 없음을 표현하는 방식으로는 적절하지 않다.
+- 자바 철학에 위배된다. - 자바는 모든 포인터를 숨겼지만, null은 예외이다.
+- type 시스템에 구멍을 만든다. - null은 모든 참조 type에 할당할 수 있다. 이는 시스템에서 null이 어떤 의미로 사용되었는지 알 수 없다.
+
+## Optional 클래스 소개
+Optional은 선택형값을 캡슐화하는 클래스이다. 값이 있으면 Optional 클래스는 값을 감싸고,  
+값이 없으면 Optional.empty 메서드로 Optional을 반환한다. Optional.empty는 특별한 싱글턴 인스턴스를 반환하는 정적 팩토리 메서드이다.
+
+아래의 예를 살펴보자. Optional\<Car>를 사용하여 값이 없을 수 있음을 명시적으로 보여준다.  
+Optional 클래스를 사용하면서 모델의 semantic이 더 명확해졌다. 보험회사는 반드시 이름을 가져야 하며 없을 경우 예외를 처리하는 코드를 추가하는 것이 아니라   
+이름이 없는 이유가 무엇인지 밝혀서 문제를 해결해야 한다.
+
+```java
+public class Person {
+    private Optional<Car> car;//차가 없을 수도 있다.
+    public Optional<Car> getCar() {
+        return car;
+    }
+}
+
+public class Car {
+    private Optional<Insurance> insurance;//보험이 없을 수도 있다.
+    public Optional<Insurance> getInsurance() {
+        return insurance;
+    }
+}
+
+public class Insurance {
+    private String name;//보험회사는 이름이 반드시 있어야한다.
+    public String getName() {
+        return name;
+    }
+}
+```
+
+모든 null 참조를 Optional로 고치는 것은 바람직하지 않다.  
+**Optional의 역할은 더 이해하기 쉬운 API를 설계하도록 돕는 것이다.** 메서드 시그니처만 보고도 선택형값인지 여부를 확인할 수 있다.  
+또 Optional은 값이 없을 수 있는 상황에 적절하게 대응하도록 강제하는 효과가 있다.
 
 ## Optional 적용 패턴
-실제 OPtional을 어떻게 활용할 수 있는지 알아보자.
+실제 Optional을 어떻게 활용할 수 있는지 알아보자.
 
 ### Optional 객체 생성
 - Optional.emty : 빈 Optional 객체를 얻을 수 있다.
