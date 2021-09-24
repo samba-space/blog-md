@@ -1,12 +1,11 @@
 # null 대신 Optional 클래스
 역사적으로 프로그래밍 언어에서 null 참조로 값이 없음을 표현해왔다. 그러나 null 참조로 인하여 발생할 수 있는 문제가 많다.  
-이를 보완하기 위해, 자바 8에서는 Optional이라는 새로운 클래스를 제공한다. 
-먼저 null의 문제점에 대해 알아보자.
+이를 보완하기 위해, 자바 8에서는 Optional이라는 새로운 클래스를 제공한다. 먼저 null의 문제점에 대해 알아보자.
 
 ## null의 문제점
-1965년 토니 호어는 ALGOL을 설계하면서 처음 null 참조가 등장했다. 그 당시에는 null 참조 및 예외로 값이 없는 상황을 가장 단순하게  
-구현할 수 있다고 판단했고 결과적으로 null 및 관련 예외가 탄생했다. 차후에 토니 호어는 null은 십업 달러짜리 실수라고 하기도 했다.  
-null의 이론적, 실용적 문제를 알아보자.
+1965년 토니 호어는 ALGOL을 설계하면서 처음 null 참조가 등장했다. 그 당시에는 null 참조 및 예외로 값이 없는 상황을  
+가장 단순하게 구현할 수 있다고 판단했고 결과적으로 null 및 관련 예외가 탄생했다. 
+차후에 토니 호어는 null은 십업 달러짜리 실수라고 하기도 했다. null의 이론적, 실용적 문제를 알아보자.
 
 ### null로 인한 문제
 - 에러의 근원이다. - NullPointerException은 자바에서 가장 흔히 발생하는 에러이다.
@@ -20,8 +19,8 @@ Optional은 선택형값을 캡슐화하는 클래스이다. 값이 있으면 Op
 값이 없으면 Optional.empty 메서드로 Optional을 반환한다. Optional.empty는 특별한 싱글턴 인스턴스를 반환하는 정적 팩토리 메서드이다.
 
 아래의 예를 살펴보자. Optional\<Car>를 사용하여 값이 없을 수 있음을 명시적으로 보여준다.  
-Optional 클래스를 사용하면서 모델의 semantic이 더 명확해졌다. 보험회사는 반드시 이름을 가져야 하며 없을 경우 예외를 처리하는 코드를 추가하는 것이 아니라   
-이름이 없는 이유가 무엇인지 밝혀서 문제를 해결해야 한다.
+Optional 클래스를 사용하면서 모델의 semantic이 더 명확해졌다. 보험회사는 반드시 이름을 가져야 하며 없을 경우 예외를  
+처리하는 코드를 추가하는 것이 아니라 이름이 없는 이유가 무엇인지 밝혀서 문제를 해결해야 한다.
 
 ```java
 public class Person {
@@ -47,8 +46,8 @@ public class Insurance {
 ```
 
 모든 null 참조를 Optional로 고치는 것은 바람직하지 않다.  
-**Optional의 역할은 더 이해하기 쉬운 API를 설계하도록 돕는 것이다.** 메서드 시그니처만 보고도 선택형값인지 여부를 확인할 수 있다.  
-또 Optional은 값이 없을 수 있는 상황에 적절하게 대응하도록 강제하는 효과가 있다.
+**Optional의 역할은 더 이해하기 쉬운 API를 설계하도록 돕는 것이다.** 메서드 시그니처만 보고도 선택형값인지  
+여부를 확인할 수 있다. 또 Optional은 값이 없을 수 있는 상황에 적절하게 대응하도록 강제하는 효과가 있다.
 
 ## Optional 적용 패턴
 실제 Optional을 어떻게 활용할 수 있는지 알아보자.
@@ -175,20 +174,20 @@ Set<String> result = stream.filter(Optional::isPresent)
 
 ### default action과 Optional 언랩
 아래의 default action과 Optional 언랩 메서드를 배워보자.
-- get() :  
-값을 읽는 가장 간단한 메서드이며, 가장 안전하지 않다.  
+- get()  
+: 값을 읽는 가장 간단한 메서드이며, 가장 안전하지 않다.  
 값이 없으면 NoSuchElementException이 발생하므로, 값이 반드시 있는 상황에서만 사용하자.
-- orElse(T other) :  
-empty Optional일 경우 default 값을 리턴한다.
-- orElseGet(Supplier<? extends T> other) :  
-orElse의 lazy 버전 메서드이며, empty Optional일 경우 Supplier가 실행된다.  
+- orElse(T other)  
+: empty Optional일 경우 default 값을 리턴한다.
+- orElseGet(Supplier<? extends T> other)  
+: orElse의 lazy 버전 메서드이며, empty Optional일 경우 Supplier가 실행된다.  
 디폴트 메서드가 오랜 시간이 걸리거나 Optional이 비어있을 때만 기본값을 생성하고 싶다면 orElseGet을 사용해야 한다.
-- orElseThrow(Supplier<? extends X> exceptionSupplier) :  
-Optional이 비어있을 때 예외를 발생시키며, 예외의 종류를 선택할 수 있다.
-- ifPresent(Consumer<? super T> consumer) :  
-Optional의 값이 존재하면 인수로 넘겨준 consumer가 실행된다.
-- ifPresentOrElse(Consumer<? super T> action, Runnable emptyAction) :  
-값이 존재할 때는 action이 실행되고, Optional이 비어있을 때, Runnable이 실행된다.
+- orElseThrow(Supplier<? extends X> exceptionSupplier)  
+: Optional이 비어있을 때 예외를 발생시키며, 예외의 종류를 선택할 수 있다.
+- ifPresent(Consumer<? super T> consumer)  
+: Optional의 값이 존재하면 인수로 넘겨준 consumer가 실행된다.
+- ifPresentOrElse(Consumer<? super T> action, Runnable emptyAction)  
+: 값이 존재할 때는 action이 실행되고, Optional이 비어있을 때, Runnable이 실행된다.
 
 ## 두개의 Optional 합치기
 가장 저렴한 보험료를 찾는 메서드이다. 
@@ -212,7 +211,8 @@ public Optional<Insurance> nullSafeFindCheapestInsurance(Optional<Person> person
 }
 ```
 
-위와 같이 개선할 수 있으며, 조건문 없이 메서드를 재구현할 수 있다. 둘 중 하나라도 빈 Optional이라면 empty Optional이 반환된다.  
+위와 같이 개선할 수 있으며, 조건문 없이 메서드를 재구현할 수 있다.  
+둘 중 하나라도 빈 Optional이라면 empty Optional이 반환된다.  
 두 값 모두 비어있지 않다면, findCheapestInsurance를 안전하게 호출할 수 있다.
 
 ## filter로 특정 값 거르기
@@ -309,7 +309,7 @@ public int readDuration(Properties props, String name) {
 }
 ```
 
-Optional을 활용하여 개선한 코드이다. 여러 연산을 서로 연결되는 데이터베이스 질의문과 비슷한 형식을 갖는다.(Stream처럼)  
+Optional을 활용하여 개선한 코드다. 여러 연산을 서로 연결되는 데이터베이스 질의문과 비슷한 형식을 갖는다.(Stream처럼)  
 자세한 내용은 코드의 주석을 확인해보자.
 
 ```java
