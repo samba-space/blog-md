@@ -100,7 +100,7 @@ LocalDateTime dt1 = date.atTime(time);
 LocalDateTime dt2 = time.atDate(date);
 ```
 
-반대로 toLocalDate, toLocalTime으로 LocalDate, LocalTime 인스턴스를 추출할 수 있다.
+반대로 **toLocalDate**, **toLocalTime**으로 LocalDate, LocalTime 인스턴스를 추출할 수 있다.
 ```java
 LocalDateTime dt1 = LocalDateTime.of(2017, 9, 21, 13, 45, 20);
 
@@ -109,9 +109,10 @@ LocalTime time = dt1.toLocalTime();
 ```
 
 ### Instant
-새로운 java.time.Instant 클래스에서는 기계적인 관점에서 시간을 표현한다. Instant는 Unix time(Unix epoch time)을 기준으로 특정 지점까지의 시간을 초로 표현한다.  
-> Unix time은 시스템에서 날짜와 시간의 흐름을 나타낼 때 기준을 삼는 시간을 의미한다. (1970년 1월 1일 0시 0분 0초 UTC)  
+새로운 java.time.Instant 클래스에서는 기계적인 관점에서 시간을 표현한다. Instant는 Unix time(Unix epoch time)을 기준으로 특정 지점까지의 시간을 초로 표현한다.
+> ##### Unix time은 시스템에서 날짜와 시간의 흐름을 나타낼 때 기준을 삼는 시간을 의미한다.  (1970년 1월 1일 0시 0분 0초 UTC)  
 
+<br>
 **Instant.ofEpochSecond**에 초를 넘겨 Instant 인스턴스를 만들 수 있다. Instant 클래스는 나노초(10억분의 1)의 정밀도를 제공한다.  
 아래의 예는 모두 같은 값을 가진다.
 
@@ -150,7 +151,7 @@ Period tenDays = Period.between(LocalDate.of(2017, 9, 11),
 ## 날짜 조정
 새로 추가된 날짜, 시간 객체들은 불변객체이므로 변경이 필요한 경우 변경된 객체 버전을 만들 수 있는 메서드를 제공한다.
 
-**with~** 메서드로 기존의 LocalDate를 변경한 객체를 만들 수 있다.(Temporal 객체의 필드를 갱신한 복사본을 만듬: 함수형 갱신)  
+**with~** 메서드로 기존의 LocalDate를 변경한 객체를 만들 수 있다.(Temporal 객체 필드를 갱신한 복사본 : 함수형 갱신)  
 with 메서드는 get 메서드와 쌍을 이루며, 날짜 시간관련 모든 클래스가 구현하는 Temporal 인터페이스에 정의되어 있다.
 ```java
 LocalDate date1 = LocalDate.of(2021, 4, 30);//2021-04-30
@@ -237,8 +238,9 @@ DateTimeFormatter italianFormatter = new DateTimeFormatterBuilder()
 ```java
 ZoneId romeZone = ZoneId.of("Europe/Rome");
 ```
-> 지역 ID(zoneId)는 '{지역}/{도시}' 형식이며, [IANA Time Zone Database](https://www.iana.org/time-zones)에서 제공하는 집합 정보를 사용한다.
+> #### 지역 ID(zoneId)는 '{지역}/{도시}' 형식이며, [IANA Time Zone Database](https://www.iana.org/time-zones)에서 제공하는 집합 정보를 사용한다.  
 
+<br>
 기존의 TimeZone의 새로 추가된 **toZoneId** 메서드로 TimeZone 객체를 ZoneId 객체로 변환할 수 있다.
 ```java
 ZoneId zoneId = TimeZone.getDefault().toZoneId();
@@ -294,8 +296,6 @@ ChronoLocalDate now = japaneseChronology.dateNow();
 
 날짜, 시간 API 설계자는 ChronoLocalDate보다는 LocalDate를 사용하라고 권고한다. 개발자가 1년은 12개월로 이루어진다와 같은 가정은 멀티캘린더에서 적용되지 않기 때문이다.  
 그렇기 때문에 프로그램의 입출력을 지역화하는 상황을 제외하고는 모든 데이터 저장, 조작, 비지니스 규칙 해석 등의 작업에서 LocalDate를 사용해야 한다.
-
-
 
 ## 참고
 - modern java in action
