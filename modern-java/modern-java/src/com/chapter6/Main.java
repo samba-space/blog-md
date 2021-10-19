@@ -89,17 +89,9 @@ public class Main {
         Optional<Person> optPerson = Optional.of(person);
 
 
-        Date.from()
 
     }
 
-    public static Optional<Insurance> nullSafeFindCheapestInsurance(Optional<Person> person, Optional<Car> car) {
-        return person.flatMap(p -> car.map(c -> findCheapestInsurance(p, c)));
-    }
-
-    private static Insurance findCheapestInsurance(Person person, Car car) {
-        return cheapestCompany;
-    }
 
 
     public static String getCarInsuranceName(Optional<Person> person) {
