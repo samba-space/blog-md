@@ -53,7 +53,7 @@ public interface Sized {
 ## 디폴트 메서드 활용 패턴
 디폴트 메서드를 이용하는 두가지 방식 **선택형 메서드**와 **동작 다중 상속**에 대해 알아보자.
 
-### 선택형 메서드(optional method)
+### 1. 선택형 메서드(optional method)
 자바 8 이전에 ``Iterator`` 인터페이스를 구현한 많은 클래스들은 remove 기능을 잘 사용하지 않아, remove에 빈 구현을 제공했다.  
 디폴트 메서드를 이용하면 메서드에 기본 구현을 제공할 수 있으므로 구현 클래스에서 빈 구현을 제공할 필요가 없어진다. 즉 불필요한 코드를 줄일 수 있다.
 
@@ -69,5 +69,88 @@ interface Iterator<\T> {
 
 위처럼 자바 8의 ``Iterator`` 인테페이스에서 remove 메서드를 디폴트 메서드로 구현하여, 기본 구현을 제공한다.
 
-### 동작 다중 상속
+### 2. 동작 다중 상속(multiple inheritance of behavior)
+디폴트 메서드를 이용하면 기존에는 불가능했던 동작 다중 상속 기능도 구현할 수 있다. 자바 8에서는 인터페이스가 구현을 포함할 수 있으므로 동작(구현 코드)을 상속받을 수 있다.
 
+아래처럼 다중 상속은 디폴트 메서드와 관계 없이 활용할 수 있다.
+
+```java
+public class ArrayList<\E> extends AbstractList<\E>
+    implements List<\E>, RandomAccess, Clonable, Serializable {
+    }
+```
+
+`ArrayList`는 한개의 클래스를 상속, 여섯개의 인터페이스를 구현했다. `AbstractList`, `List` 등 7개의 타입의 서브타입이 된다. 즉, 디폴트 메서드를 사용하지 않아도 다중 상속을 활용할 수 있다. 
+
+### 동작 다중 상속의 장점
+동작 다중 상속의 장점은 기능이 중복되지 않는 최소의 인터페이스들을 활용하여, 코드를 복붙할 필요 없이 디폴트 메서드를 재사용할 수 있다.
+
+``Rotatable``과 ``Moveable`` 인터페이스를 정의하였다. 각 인터페이스는 디폴트 메서드를 제공하고 있다.
+
+```java
+public interface Rotatable {
+    void setRotationAngle(int angleInDegrees);
+    int getRotationAngle();
+    default void rotateBy(int angleInDegrees){
+        setRotationAngle((getRotationAngle() + angleInDegrees) % 360);
+    }
+}
+```
+```java
+public interface Moveable {
+    int getX();
+    int getY();
+    void setX(int x);
+    void setY(int y);
+
+    default void moveHorizontally(int distance) {
+        setX(getX() + distance);
+    }
+
+    default void moveVertically(int distance) {
+        setY(getY() + distance);
+    }
+}
+```
+
+이제 회전하고 움직일 수 있는 ``Monster`` 클래스를 정의해보자.
+
+```java
+public class Monster implements Rotatable, Moveable {
+    // 추상메서드 구현
+}
+```
+
+``Monster``는 구현한 인터페이스들의 디폴트 메서드를 자동으로 상속받는다. 상속받은 다양한 메서드는 직접 호출할 수 있다.
+
+```java
+Monster monster = new Monster();
+monster.rotateBy(180);
+monster.moveVertically(10);
+```
+
+이번에는 회전만 할 수 있는 ``Sun`` 클래스를 정의했다. 디폴트 메서드를 재사용하여, 코드 복붙을 할 필요가 없어졌다.
+
+```java
+public class Sun implements Rotatable {
+    //추상메서드 구현
+}
+```
+
+인터페이스에 구현을 포함시키면 또 다른 장점은 디폴트 메서드를 직접 수정할 수 있으므로, 해당 인터페이스를 구현한 모든 클래스에 자동으로 변경한 코드가 상속된다는 것이다.
+
+> 한개의 메서드를 재사용하려고 수많은 필드와 메서드가 정의되어 있는 클래스를 상속 받는것은 옳지 못하다.  
+이럴 경우 **delegation**, 즉 멤버 변수를 이용해서 필요한 메서드를 직접 호출하는 메서드를 작성하는 것이 좋다.
+
+## 해결 규칙
+자바 8에는 디폴트 메서드가 추가되었으므로 같은 시그니처를 갖는 디폴트 메서드를 상속받는 상황이 생길수 있다.  
+자바 8은 이러한 문제에 대한 해결 규칙을 제공한다.
+
+다른 클래스나 인터페이스로부터 같은 시그니처를 갖는 메서드를 상속받을 때 세가지 규칙을 따라야 한다.
+1. 클래스가 항상 이긴다. 클래스나 슈퍼클래스에서 정의한 메서드가 디폴트 메서드보다 우선권을 갖는다.
+2. 1번 규칙 이외의 상황에서는 서브인터페이스가 이긴다. 상속관계를 갖는 인터페이스에서 같은 시그니처를 갖는 메서드를 정의할 때는 서브인터페이스가 이긴다.
+3. 여전히 디폴트 메서드의 우선순위가 결정되지 않았다면 여러 인터페이스를 상속받는 클래스가 명시적으로 디폴트 메서드를 오버라이드하고 호출해야 한다.
+    - 자바 8에서 X.super.m() 형태의 새로운 문법을 제공하며, X는 m메서드의 슈퍼인터페이스다.
+
+## 참고
+- modern java in action
