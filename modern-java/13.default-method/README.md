@@ -67,8 +67,8 @@ interface Iterator<T> {
 아래처럼 다중 상속은 디폴트 메서드와 관계 없이 활용할 수 있다.
 
 ```java
-public class ArrayList<\E> extends AbstractList<\E>
-    implements List<\E>, RandomAccess, Clonable, Serializable {
+public class ArrayList<E> extends AbstractList<E>
+    implements List<E>, RandomAccess, Clonable, Serializable {
     }
 ```
 
