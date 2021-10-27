@@ -158,3 +158,78 @@ Predicate<Integer> numberPredicate= (number) -> number == 1;
 ```
 
 일반적으로 기본형식을 함수형 인터페이스의 이름 앞에 붙여 `IntPredicate`, `LongPredicate`, `DoublePredicate` 등과 같이 인터페이스 명을 가진다.
+
+## type 검사, type 추론, 제약
+람다 표현식 자체에는 람다가 어떤 함수형 인터페이스를 구현하는지의 정보가 포함되어 있지 않다. 람다 표현식을 더 제대로 이해하려면 람다의 실제 type을 파악해야 한다.
+
+### type 검사
+람다가 사용되는 context를 이용해서 람다의 type을 추론할 수 있다. 어떤 context(할당문, 메서드호출(파라미터, 리턴값), 형변환 등)에서 기대되는 람다 표현식의 type을 target type이라고 한다.
+
+```java
+filter(inventory, (Apple apple) -> apple.getWeight() > 150);
+```
+위와 같이 람다 표현식이 사용되었을 때, type 검사 과정을 알아보자.
+1. filter 메서드 선언을 확인한다.(`filter(List<Apple> inventory, Predicate<Apple> p)`)
+2. target type은 `Predicate<Apple>`이며, 추상 메서드 `test`는 Apple을 인수로 받아 boolean을 반환하는 함수 디스크립터를 묘사한다. 
+3. 함수 디스크립터 `Apple -> boolean`과 람다의 시그니처 일치하는지 확인한다.
+
+### 같은 람다, 다른 함수형 인터페이스
+target type이라는 특징 때문에 같은 람다 표현식이더라도 호환되는 추상 메서드를 가진 다른 함수형 인터페이스로 사용될 수 있다.
+
+같은 람다 표현식이지만, target type이 각각 `Callable<Integer>`, `PrivilegedAction<Integer>`이다.
+```java
+Callable<Integer> c = () -> 42;
+PrivilegedAction<Integer> p = () -> 42;
+```
+
+비슷하게 자바 7에서 다이아몬드 연산자로 context에 따른 제네릭 타입을 추론할 수 있다.
+
+```java
+List<String> listOfStrings = new ArrayList<>;
+List<Integer> listOfIntegers = new ArrayList<>;
+```
+또, 특별한 void 호환 규칙이 있다. 람다의 바디가 일반 표현식(expression)이 있으면 void를 반환하는 함수 디스크립터와 호환된다. 예를 들어 List의 add 메서드는 boolean을 반환하므로
+`s -> list.add(s)` 람다 표현식은 target type이 `Predicate<String>`이지만, `Consumber<String>`도 호환이 된다.
+
+```java
+Predicate<String> p = s -> list.add(s);
+Consumer<String> b = s -> list.add(s);
+```
+> ##### 표현식은 변수, 상수, 연산자, 메서드 호출로 구성된 것을 말하며, 표현식이 모여 statement, statement가 모여 block을 구성한다.
+
+### type 추론
+target type을 이용해서 함수 디스크립터를 알 수 있으므로 컴파일러는 람다의 시그니처도 추론할 수 있다.
+
+filter의 `Predicate<Apple>`의 `test` 메서드로 람다의 시그니처를 추론할 수 있다. 람다의 type 추론 대상 파라미터가 1개일 경우 괄호도 생략 가능하다.
+```java
+List<Apple> greenApples = filter(inventory, apple -> GREEN.equals(apple.getColor());
+```
+
+상황에 따라 명시적으로 파라미터에 type을 포함하는 것이 좋을 때도 있고, 생략하는 것이 가독성을 향상시킬 때도 있다. 무엇이 좋은지 정답은 없고 상황에 따라 개발자가 결정해야 한다.
+
+```java
+Comparator<Apple> c1 =
+        (Apple a1, Apple a2) -> a1.getWeight().compareTo(a2.getWeight());
+Comparator<Apple> c2 =
+        (a1, a2) -> a1.getWeight().compareTo(a2.getWeight());
+```
+### 지역 변수 사용
+람다 표현식에서는 익명 함수가 하는 것처럼 자유 변수(외부 변수)를 활용할 수 있다. 이와 같은 동작을 람다 캡처링(capturing lambda)이라고 부른다.  
+자유 변수 사용에도 제약이 있다. 람다는 인스턴스 변수와 정적 변수를 자유롭게 캡처할 수 있다. 지역 변수는 명시적으로 final을 선언되어야 하거나 effectively final 해야한다.(final 변수처럼 한번만 할당)
+
+effectively final 하기 때문에 사용될 수 있고,
+```java
+int port = 1337;
+Runnable r = () -> System.out.println(port);
+```
+
+port를 두번 할당하므로 컴파일할 수는 코드이다.
+
+```java
+int port = 1337;
+Runnable r = () -> System.out.println(port);
+port = 3333;
+```
+
+이와 같은 제약이 있는 이유는 지역 변수는 스택에 저장되는데, 멀티 스레드 환경에서 변수를 할당하는 스레드가 사라져서 변수 할당이 해제되었지만 람다를 실행하는 스레드에서는 해당 변수에 접근하려 할 수 있다.  
+따라서 자바 구현에서는 원래 변수에 접근을 허용하지 않고 자유 지역 변수의 복사본을 제공한다. 그러므로 복사본의 값이 바뀌지 않아야 하므로 지역 변수에는 한번만 값을 할당해야 한다는 제약이 생긴 것이다.
