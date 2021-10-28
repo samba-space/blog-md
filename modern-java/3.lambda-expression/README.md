@@ -233,3 +233,35 @@ port = 3333;
 
 이와 같은 제약이 있는 이유는 지역 변수는 스택에 저장되는데, 멀티 스레드 환경에서 변수를 할당하는 스레드가 사라져서 변수 할당이 해제되었지만 람다를 실행하는 스레드에서는 해당 변수에 접근하려 할 수 있다.  
 따라서 자바 구현에서는 원래 변수에 접근을 허용하지 않고 자유 지역 변수의 복사본을 제공한다. 그러므로 복사본의 값이 바뀌지 않아야 하므로 지역 변수에는 한번만 값을 할당해야 한다는 제약이 생긴 것이다.
+
+## 메서드 참조
+메서드 참조를 이용하면 기존의 메서드 정의를 재활용해서 람다처럼 전달할 수 있다. 메서드 참조는 특정 메서드만을 호출하는 람다의 축약형이라고 할 수 있다.  
+명시적으로 메서드명을 참조함으로써 가독성을 높일 수 있다.
+
+## 메서드 참조를 만드는 방법
+### 1. 정적 메서드 참조
+`Integer::paresInt`는 `Integer`의 정적 메서드 `parseInt` 의 메서드 참조이다. 단축 규칙은 다음과 같다 `(args) -> ClassName.staticMethod(args)` => `ClassName::staticMethod`
+### 2. 다양한 형식의 인스턴스 메서드 참조
+`String::length`는 `String`의 `length` 메서드의 메서드 참조이다. 단축 규칙은 다음과 같다 `(arg0, rest) -> arg0.instanceMethod(rest)` => `ClassName::instanceMethod`
+### 3. 기존 객체의 인스턴스 메서드 참조
+`transaction::getValue()`는 Transaction 객체를 할당 받은 지역변수 `transaction`의 `getValue` 메서드의 메서드 참조이다. 단축 규칙은 다음과 같다 `(args) -> expr.instanceMethod(args)` => `expr::instanceMethod`   
+
+private helper 메서드를 정의한 상황에서 유용하다. `filter`의 두번째 파라미터인 `Predicate<String>`에 메서드 참조를 사용할 수 있다.
+```java
+private boolean isValidName(String string) {
+    return Character.isUpperCase(string.charAt(0));
+}
+filter(words, this::isValidName);
+```
+### 4. 생성자 참조
+`ClassName::new`와 같이 기존 생성자의 참조를 만들 수 있다. 정적 메서드 참조와 유사하다.  
+
+```java
+Supplier<Apple> c1 = Apple::new;
+Supplier<Apple> c2 = () -> new Apple();
+Apple apple1 = c1.get();//새로운 Apple 객체를 만듬
+
+BiFunction<Color, Integer, Apple> c3 = Apple::new;//Apple(String color, int weight) 생성자 참조
+BiFunction<Color, Integer, Apple> c4 = (color, weight) -> new Apple(color, weight);
+Apple apple2 = c3.apply(Green, 110);//새로운 Apple 객체를 만듬
+```
