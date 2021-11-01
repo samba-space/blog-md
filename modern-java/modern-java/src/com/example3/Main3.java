@@ -7,6 +7,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.DirectoryStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.function.*;
@@ -15,6 +16,9 @@ public class Main3 {
     private static class Apple{
         private Color color;
         private int weight;
+
+        public Apple() {
+        }
 
         public Apple(int weight) {
             this.weight = weight;
@@ -69,20 +73,18 @@ public class Main3 {
 //        list.sort((o1, o2) -> 0);
 
 
-        Function<String, String> addHeader = Letter::addHeader;
 
+        Function<String, Integer> stringIntegerFunction = String::length;
+        Function<String, Integer> bufferedReaderProcessor = (s) -> s.length();
 
-        System.out.println(addHeader.andThen(Letter::checkSpelling)
-                .andThen(Letter::addFooter).apply("labda"));
+        BiFunction<String, String, Boolean> stringStringBooleanBiFunction = String::startsWith;
+        BiFunction<String, String, Boolean> stringStringBooleanBiFunction1 = (String s, String pre) -> s.startsWith(pre);
 
+        Supplier<Apple> c1 = Apple::new;
+        Supplier<Apple> c2 = () -> new Apple();
 
-        ToIntBiFunction<Apple, Apple> appleComparator =
-
-
-
-
-                (Apple a1, Apple a2)  ->  a1.getWeight().compareTo(a2.getWeight());
-
+        BiFunction<Color, Integer, Apple> c3 = Apple::new;
+        BiFunction<Color, Integer, Apple> c4 = (color, weight) -> new Apple(color, weight);
 
     }
     public static String processFile(BufferedReaderProcessor p) throws IOException{

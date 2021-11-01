@@ -265,3 +265,66 @@ BiFunction<Color, Integer, Apple> c3 = Apple::new;//Apple(String color, int weig
 BiFunction<Color, Integer, Apple> c4 = (color, weight) -> new Apple(color, weight);
 Apple apple2 = c3.apply(Green, 110);//새로운 Apple 객체를 만듬
 ```
+
+## 람다 표현식을 조합할 수 있는 유용한 메서드
+자바 8 API의 몇몇 함수형 인터페이스는 람다 표현식을 조합할 수 있도록 유틸리티 메서드를 제공한다.(디폴트 메서드)
+
+### Comparator 조합, 연결
+`comparing`을 이용해서 비교에 사용할 키를 추출하는 `Function` 기반의 `Comparator`를 반환할 수 있다.
+```java
+Comparator<Apple> c = Comparator.comparing(Apple::getWeight);
+```
+
+내림차순으로 정렬하고 싶다면 인터페이스 자체에서 주어진 비교자의 순서를 바꾸는 `reverse` 메서드를 사용하면 된다.
+
+```java
+inventory.sort(comparing(Apple::getWeight).reversed());
+```
+
+만약 값이 같은 경우에는 무엇을 먼저 나열해야할까? 이럴 경우 `thenComparing` 메서드로 두번째 비교자를 만들수 있다. `thenComparing` 메서드는 함수를 인수로 받아 첫번째 비교자를 이용해서 두 객체가 같다고 판단되면 두번째 비교자에 객체를 전달한다.  
+
+사과의 무게가 같다면 원산지 국가별로 사과를 정렬하는 예이다.
+```java
+inventory.sort(comparing(Apple::getWeight)
+         .reversed()
+         .thenComparing(Apple::getCountry));
+```
+
+### Predicate 조합
+복잡한 `Predicate`를 만들 수 있도록 `negate`, `and`, `or` 세가지 메서드를 제공한다.  
+
+빨간색이 아닌 사과 처럼 특정 `Predicate`를 반전시킬 때 `negate` 메서드를 사용할 수 있다.
+
+```java
+Predicate<Apple> notRedApple = redApple.negate();
+```
+
+`and` 메서드를 이용해서 빨간색이면서 무거운 사과를 선택하도록 두 람다를 조합할 수 있다.
+```java
+Predicate<Apple> redAndHeavyApple = redApple.and(apple -> apple.getWeight() > 150);
+```
+
+`or` 메서드를 이용해서 빨간색이면서 무거운 사과 또는 그냥 녹색 사과 조건을 만들 수 있다.
+```java
+Predicate<Apple> redAndHeavyApple = redApple.and(apple -> apple.getWeight() > 150)
+                                            .or(apple -> GREEN.equals(apple.getColor()));
+```
+
+### Function 조합
+`Function` 인스턴스를 반환하는 `andThen`, `compose` 두가지 디폴트 메서드를 제공한다.
+
+`andThen` 메서드는 주어진 함수를 먼저 적용한 결과를 다른 함수의 입력으로 전달하는 함수를 반환한다.
+```java
+Function<Integer, Integer> f = x -> x + 1;
+Function<Integer, Integer> g = x -> x * 2;
+Function<Integer, Integer> h = f.andThen(g);//f -> g
+int result = h.apply(1);//4 반환
+```
+
+`compose` 메서드는 인수로 주어진 함수를 먼저 실행한 다음 그 결과를 외부 함수의 인수로 제공한다. `andThen`과 반대다.
+```java
+Function<Integer, Integer> f = x -> x + 1;
+Function<Integer, Integer> g = x -> x * 2;
+Function<Integer, Integer> h = f.compose(g);//g -> f
+int result = h.apply(1);//3 반환
+```
